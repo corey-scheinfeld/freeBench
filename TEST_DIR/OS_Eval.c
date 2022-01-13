@@ -62,8 +62,6 @@ char *new_output_fn = NULL;
 #define DEBUG false
 #define BASE_ITER 10000
 
-#define PAGE_SIZE 4096
-
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b)
 {
 	if (result->tv_nsec +a.tv_nsec < b.tv_nsec)
@@ -585,7 +583,7 @@ void mmap_test(struct timespec *diffTime) {
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	void *addr = (void *)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	clock_gettime(CLOCK_MONOTONIC,&endTime);
 	
 	syscall(SYS_munmap, addr, file_size);
@@ -600,7 +598,7 @@ void page_fault_test(struct timespec *diffTime) {
 	int fd =open("test_file.txt", O_RDONLY);
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
-	void *addr = (void *)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	char a = *((char *)addr);
@@ -643,7 +641,7 @@ void munmap_test(struct timespec *diffTime) {
 
 	int fd =open("test_file.txt", O_RDWR);
 	if (fd < 0) printf("invalid fd%d\n", fd);
-	void *addr = (void *)syscall(SYS_mmap, NULL, file_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
 	for (int i = 0; i < file_size; i++) {
 		((char *)addr)[i] = 'b';
 	}
@@ -1110,7 +1108,8 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 int main(int argc, char *argv[])
 {
 	home = getenv("LEBENCH_DIR");
-	
+	printf("%d",PAGE_SIZE);	
+
 	output_fn = (char *)malloc(500*sizeof(char));
 	strcpy(output_fn, home);
 	strcat(output_fn, OUTPUT_FN);
