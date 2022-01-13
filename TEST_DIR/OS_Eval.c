@@ -1,4 +1,7 @@
 #define _GNU_SOURCE
+#include <sys/param.h>
+#include <sys/_cpuset.h>
+#include <sys/cpuset.h>
 #include <sched.h>
 #include <time.h>
 #include <unistd.h>
@@ -797,6 +800,8 @@ void epoll_test(struct timespec *diffTime) {
 }
 
 */
+
+
 void context_switch_test(struct timespec *diffTime) {
 	int iter = 1000;
 	struct timespec startTime, endTime;
@@ -807,7 +812,7 @@ void context_switch_test(struct timespec *diffTime) {
 	if (retval != 0) printf("[error] failed to open pipe2.\n");
 	
 	char w = 'a', r;
-	cpu_set_t cpuset;
+	cpuset_t cpuset;
 	int prio;
 
 	retval = sched_getaffinity(getpid(), sizeof(cpuset), &cpuset);
@@ -822,7 +827,7 @@ void context_switch_test(struct timespec *diffTime) {
 		retval = close(fds2[1]);
 		if (retval != 0) printf("[error] failed to close fd2.\n");
 
-		cpu_set_t set;
+		cpuset_t set;
 		CPU_ZERO(&set);
 		CPU_SET(0, &set);
 		retval = sched_setaffinity(getpid(), sizeof(set), &set);
@@ -852,7 +857,7 @@ void context_switch_test(struct timespec *diffTime) {
 		retval = close(fds2[0]);
 		if (retval != 0) printf("[error] failed to close fd2.\n");
 
-		cpu_set_t set;
+		cpuset_t set;
 		CPU_ZERO(&set);
 		CPU_SET(0, &set);
 		retval = sched_setaffinity(getpid(), sizeof(set), &set);
