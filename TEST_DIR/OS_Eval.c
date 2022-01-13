@@ -801,7 +801,7 @@ void epoll_test(struct timespec *diffTime) {
 
 */
 
-
+/*
 void context_switch_test(struct timespec *diffTime) {
 	int iter = 1000;
 	struct timespec startTime, endTime;
@@ -892,7 +892,7 @@ void context_switch_test(struct timespec *diffTime) {
 	diffTime->tv_nsec = diff->tv_nsec;
 	free(diff);
 }
-
+*/
 int msg_size = -1;
 int curr_iter_limit = -1;
 #define sock "/TEST_DIR/socket"
@@ -1179,10 +1179,11 @@ int main(int argc, char *argv[])
 	/*****************************************/
 	/*            CONTEXT SWITCH             */
 	/*****************************************/
+	/*
 	info.iter = BASE_ITER * 10;
 	info.name = "context siwtch";
 	one_line_test(fp, copy, context_switch_test, &info);
-
+	*/
 
 	/*****************************************/
 	/*             SEND & RECV               */
