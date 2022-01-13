@@ -1,19 +1,21 @@
-#define _GNU_SOURCE
+#define __BSD_VISIBLE 1
+#include <sys/cdefs.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/param.h>
 #include <sys/_cpuset.h>
 #include <sys/cpuset.h>
 #include <sched.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -31,7 +33,7 @@
 
 int counter=3;
 bool  isFirstIteration = false;
-const char *home;
+const char *home = "/home/corey/LEBench/";
 char *output_fn = NULL;
 char *new_output_fn = NULL;
 #define setup 		(struct timespec *fp) \
@@ -1107,7 +1109,6 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 
 int main(int argc, char *argv[])
 {
-	home = getenv("LEBENCH_DIR");
 	printf("%d",PAGE_SIZE);	
 
 	output_fn = (char *)malloc(500*sizeof(char));
@@ -1115,7 +1116,7 @@ int main(int argc, char *argv[])
 	strcat(output_fn, OUTPUT_FN);
 
 	new_output_fn = (char *)malloc(500*sizeof(char));
-	strcpy(new_output_fn, home);
+	char *res = strcpy(new_output_fn, home);
 	strcat(new_output_fn, NEW_OUTPUT_FN);
 
 	struct timespec startTime, endTime;
