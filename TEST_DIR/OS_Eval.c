@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/poll.h>
-#include <sys/epoll.h>
+//#include <sys/epoll.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -738,7 +738,7 @@ void poll_test(struct timespec *diffTime) {
 	}
 	return;
 }
-
+/*
 void epoll_test(struct timespec *diffTime) {
 	struct timespec startTime, endTime;
 	int retval;
@@ -796,6 +796,7 @@ void epoll_test(struct timespec *diffTime) {
 	return;
 }
 
+*/
 void context_switch_test(struct timespec *diffTime) {
 	int iter = 1000;
 	struct timespec startTime, endTime;
@@ -1366,11 +1367,12 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "poll";
 	one_line_test(fp, copy, poll_test, &info);
-		
+
+	/*			
 	info.iter = BASE_ITER * 10;
 	info.name = "epoll";
 	one_line_test(fp, copy, epoll_test, &info);
-	
+	*/	
 
 	/****** BIG ******/
 	fd_count = 1000;
@@ -1382,10 +1384,12 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER;
 	info.name = "poll big";
 	one_line_test(fp, copy, poll_test, &info);
-
+	
+	/*	
 	info.iter = BASE_ITER;
 	info.name = "epoll big";
 	one_line_test(fp, copy, epoll_test, &info);
+	*/	
 
 	fclose(fp);
 	if (!isFirstIteration)
