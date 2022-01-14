@@ -962,7 +962,12 @@ void send_test(struct timespec *timeArray, int iter, int *i) {
 		if (fd_client < 0) printf("[error] failed to open client socket.\n");
 		retval = connect(fd_client, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
 		if (retval == -1) printf("[error] failed to connect.\n");
-				
+		
+		int sockoption = 100000;
+   		if(setsockopt(fd_client, SOL_SOCKET, SO_SNDBUF, &sockoption, sizeof(sockoption)) < 0) {
+       			printf("[error] failed to set send buffer size to %d\n", sockoption);
+   		}
+
 		char *buf = (char *) malloc (sizeof(char) * msg_size);
 		for (int i = 0; i < msg_size; i++) {
 			buf[i] = 'a';
@@ -1078,6 +1083,11 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 		if (fd_client < 0) printf("[error] failed to open client socket.\n");
 		retval = connect(fd_client, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
 		if (retval == -1)printf("[error] failed to connect.\n");
+		
+		int sockoption = 100000;
+   		if(setsockopt(fd_client, SOL_SOCKET, SO_SNDBUF, &sockoption, sizeof(sockoption)) < 0) {
+       			printf("[error] failed to set send buffer size to %d\n", sockoption);
+   		}
 
 		char *buf = (char *) malloc (sizeof(char) * msg_size);
 		for (int i = 0; i < msg_size; i++) {
@@ -1110,7 +1120,6 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 
 int main(int argc, char *argv[])
 {
-	printf("%d",PAGE_SIZE);	
 
 	output_fn = (char *)malloc(500*sizeof(char));
 	strcpy(output_fn, home);
