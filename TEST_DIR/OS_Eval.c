@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/param.h>
-#include <sys/_cpuset.h>
 #include <sys/cpuset.h>
 #include <sched.h>
 #include <time.h>
@@ -14,7 +13,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/mman.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -31,6 +29,7 @@
 #include <sys/time.h>
 #include <sys/un.h>
 #include <sys/errno.h>
+#include <sys/select.h>
 
 int counter=3;
 bool  isFirstIteration = false;
@@ -673,7 +672,7 @@ void select_test(struct timespec *diffTime) {
 
 
 	for (int i = 0; i < fd_count; i++) {
-		int fd = socket(AF_INET, SOCK_STREAM, 0);
+		int fd = socket(PF_INET, SOCK_STREAM, 0);
 		if (fd < 0) printf("invalid fd in select: %d\n", fd);
 		if (fd > maxFd) maxFd = fd;
 		FD_SET(fd, &rfds);
@@ -690,6 +689,7 @@ void select_test(struct timespec *diffTime) {
 	}
 
 	for (int i = 0; i < fd_count; i++) {
+		FD_CLR(fds[i], &rfds);
 		int retval = close(fds[i]);
 		if (retval == -1) printf ("[error] close failed in select test %d.\n", fds[i]);
 	}
@@ -718,7 +718,7 @@ void poll_test(struct timespec *diffTime) {
 			index ++;
 		}
 		name[index] = '\0';
-		int fd = socket(AF_INET, SOCK_STREAM, 0);
+		int fd = socket(PF_INET, SOCK_STREAM, 0);
 		if (fd < 0) printf("invalid fd in poll: %d\n", fd);
 		
 		pfds[i].fd = fd;
@@ -802,7 +802,7 @@ void epoll_test(struct timespec *diffTime) {
 
 */
 
-/*
+
 void context_switch_test(struct timespec *diffTime) {
 	int iter = 1000;
 	struct timespec startTime, endTime;
@@ -816,7 +816,7 @@ void context_switch_test(struct timespec *diffTime) {
 	cpuset_t cpuset;
 	int prio;
 
-	retval = sched_getaffinity(getpid(), sizeof(cpuset), &cpuset);
+	retval = cpuset_getaffinity(CPU_LEVEL_WHICH, CPU_WHICH_PID, getpid(), sizeof(cpuset), &cpuset);
 	if (retval == -1) printf("[error] failed to get affinity.\n");
 	prio = getpriority(PRIO_PROCESS, 0);
 	if (prio == -1) printf("[error] failed to get priority.\n");
@@ -831,7 +831,7 @@ void context_switch_test(struct timespec *diffTime) {
 		cpuset_t set;
 		CPU_ZERO(&set);
 		CPU_SET(0, &set);
-		retval = sched_setaffinity(getpid(), sizeof(set), &set);
+		retval = cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_PID, getpid(), sizeof(set), &set);
 		if (retval == -1) printf("[error] failed to set processor affinity.\n");
 		retval = setpriority(PRIO_PROCESS, 0, -20); 
 		if (retval == -1) printf("[error] failed to set process priority.\n");
@@ -861,7 +861,7 @@ void context_switch_test(struct timespec *diffTime) {
 		cpuset_t set;
 		CPU_ZERO(&set);
 		CPU_SET(0, &set);
-		retval = sched_setaffinity(getpid(), sizeof(set), &set);
+		retval = cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_PID, getpid(), sizeof(set), &set);
 		if (retval == -1) printf("[error] failed to set processor affinity.\n");
 		retval = setpriority(PRIO_PROCESS, 0, -20); 
 		if (retval == -1) printf("[error] failed to set process priority.\n");
@@ -879,7 +879,7 @@ void context_switch_test(struct timespec *diffTime) {
 		printf("[error] failed to fork.\n");
 	}
 
-	retval = sched_setaffinity(getpid(), sizeof(cpuset), &cpuset);
+	retval = cpuset_setaffinity(CPU_LEVEL_WHICH,CPU_WHICH_PID, getpid(), sizeof(cpuset), &cpuset);
 	if (retval == -1) printf("[error] failed to restore affinity.\n");
 	retval = setpriority(PRIO_PROCESS, 0, prio);
 	if (retval == -1) printf("[error] failed to restore priority.\n");
@@ -893,7 +893,7 @@ void context_switch_test(struct timespec *diffTime) {
 	diffTime->tv_nsec = diff->tv_nsec;
 	free(diff);
 }
-*/
+
 int msg_size = -1;
 int curr_iter_limit = -1;
 #define sock "TEST_DIR/socket"
@@ -1165,12 +1165,12 @@ int main(int argc, char *argv[])
 	fprintf(fp,"%s,\n",str_os_name);
 	
 	testInfo info;	
-
+	
 	/*****************************************/
 	/*               GETPID                  */
 	/*****************************************/
-
-	//sleep(60);
+	
+	sleep(60);
 	info.iter = BASE_ITER * 100;
 	info.name = "ref";
 	one_line_test(fp, copy, ref_test, &info);
@@ -1189,15 +1189,16 @@ int main(int argc, char *argv[])
 	/*****************************************/
 	/*            CONTEXT SWITCH             */
 	/*****************************************/
-	/*
+	
 	info.iter = BASE_ITER * 10;
 	info.name = "context siwtch";
 	one_line_test(fp, copy, context_switch_test, &info);
-	*/
+	
 
 	/*****************************************/
 	/*             SEND & RECV               */
 	/*****************************************/
+	
 	msg_size = 1;	
 	curr_iter_limit = 50;
 	printf("msg size: %d.\n", msg_size);
@@ -1223,10 +1224,11 @@ int main(int argc, char *argv[])
 	info.name = "big recv";
 	one_line_test_v2(fp, copy, recv_test, &info);
 	
-
+	
 	/*****************************************/
 	/*         FORK & THREAD CREATE          */
 	/*****************************************/
+	
 	info.iter = BASE_ITER * 2;
 	info.name = "fork";
 	two_line_test(fp, copy, forkTest, &info);
@@ -1265,12 +1267,13 @@ int main(int argc, char *argv[])
 		munmap(pages1[i], PAGE_SIZE);
 	}
 
-
+	
 	/*****************************************/
 	/*     WRITE & READ & MMAP & MUNMAP      */
 	/*****************************************/
 
 	/****** SMALL ******/
+	
 	file_size = PAGE_SIZE;	
 	printf("file size: %d.\n", file_size);
 
@@ -1294,8 +1297,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "small page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-
+	
 	/****** MID ******/
+	
 	file_size = PAGE_SIZE * 10;
 	printf("file size: %d.\n", file_size);
 
@@ -1319,8 +1323,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "mid page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-
+	
 	/****** BIG ******/
+	
 	file_size = PAGE_SIZE * 1000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1344,8 +1349,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "big page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-
-       /****** HUGE ******/
+	
+        /****** HUGE ******/
+	
 	file_size = PAGE_SIZE * 10000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1368,7 +1374,7 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "huge page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-
+	
 	/*****************************************/
 	/*              WRITE & READ             */
 	/*****************************************/
