@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <signal.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -28,12 +29,12 @@
 //#include <sys/epoll.h>
 #include <sys/resource.h>
 #include <sys/time.h>
-#include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/errno.h>
 
 int counter=3;
 bool  isFirstIteration = false;
-const char *home = "/home/corey/LEBench/";
+const char *home = "/home/corey/LEBench";
 char *output_fn = NULL;
 char *new_output_fn = NULL;
 #define setup 		(struct timespec *fp) \
@@ -585,7 +586,7 @@ void mmap_test(struct timespec *diffTime) {
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	clock_gettime(CLOCK_MONOTONIC,&endTime);
 	
 	syscall(SYS_munmap, addr, file_size);
@@ -600,7 +601,7 @@ void page_fault_test(struct timespec *diffTime) {
 	int fd =open("test_file.txt", O_RDONLY);
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
-	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	char a = *((char *)addr);
@@ -643,7 +644,7 @@ void munmap_test(struct timespec *diffTime) {
 
 	int fd =open("test_file.txt", O_RDWR);
 	if (fd < 0) printf("invalid fd%d\n", fd);
-	void *addr = (void *)(long)syscall(SYS_mmap, NULL, file_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)syscall(SYS_mmap, NULL, file_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
 	for (int i = 0; i < file_size; i++) {
 		((char *)addr)[i] = 'b';
 	}
@@ -919,14 +920,26 @@ void send_test(struct timespec *timeArray, int iter, int *i) {
 	}
 
 	if (forkId == 0) {
+		printf("server");
 		close(fds1[0]);
 		close(fds2[1]);
 
-		int fd_server = socket(AF_UNIX, SOCK_STREAM, 0);
+		int fd_server = socket(PF_UNIX, SOCK_STREAM, 0);
+		int sockoption = 1;
+		setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR,&sockoption, sizeof(sockoption));
 		if (fd_server < 0) printf("[error] failed to open server socket.\n");
 	
 		retval = bind(fd_server, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
-		if (retval == -1) printf("[error] failed to bind.\n");
+		printf("%d", fd_server);
+		printf("%s", server_addr.sun_path);
+
+		if (retval == -1) {
+			printf("[error] failed to bind.\n");
+			printf("%d", errno);
+		}
+		else{
+			printf("socket bind succesful");
+		}
 		retval = listen(fd_server, 10); 
 		if (retval == -1) printf("[error] failed to listen.\n");
 		if (DEBUG) printf("Waiting for connection\n");
@@ -956,12 +969,15 @@ void send_test(struct timespec *timeArray, int iter, int *i) {
 		close(fds2[0]);
 
 		read(fds1[0], &r, 1);
-
-		int fd_client = socket(AF_UNIX, SOCK_STREAM, 0);
+		int fd_client = socket(PF_UNIX, SOCK_STREAM, 0);
+		printf("%d", fd_client);
+		printf("%s", server_addr.sun_path);
 		if (fd_client < 0) printf("[error] failed to open client socket.\n");
 		retval = connect(fd_client, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
-		if (retval == -1) printf("[error] failed to connect.\n");
-
+		if (retval == -1){
+                        printf("[error] failed to connect.\n");
+                        printf("%d", errno);
+                }
 		char *buf = (char *) malloc (sizeof(char) * msg_size);
 		for (int i = 0; i < msg_size; i++) {
 			buf[i] = 'a';
@@ -1021,7 +1037,7 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 		close(fds1[0]);
 		close(fds2[1]);
 
-		int fd_server = socket(AF_UNIX, SOCK_STREAM, 0);
+		int fd_server = socket(PF_UNIX, SOCK_STREAM, 0);
 		if (fd_server < 0) printf("[error] failed to open server socket.\n");
 	
 		retval = bind(fd_server, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
@@ -1073,11 +1089,13 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 
 		read(fds1[0], &r, 1);
 
-		int fd_client = socket(AF_UNIX, SOCK_STREAM, 0);
+		int fd_client = socket(PF_UNIX, SOCK_STREAM, 0);
 		if (fd_client < 0) printf("[error] failed to open client socket.\n");
 		retval = connect(fd_client, (struct sockaddr *) &server_addr, sizeof(struct sockaddr_un));
-		if (retval == -1) printf("[error] failed to connect.\n");
-
+		if (retval == -1){
+			printf("[error] failed to connect.\n");
+			printf("%d", errno);
+		}
 		char *buf = (char *) malloc (sizeof(char) * msg_size);
 		for (int i = 0; i < msg_size; i++) {
 			buf[i] = 'a';
