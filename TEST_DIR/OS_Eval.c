@@ -24,7 +24,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/poll.h>
-//#include <sys/epoll.h>
+#include <sys/event.h>
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/un.h>
@@ -672,7 +672,7 @@ void select_test(struct timespec *diffTime) {
 
 
 	for (int i = 0; i < fd_count; i++) {
-		int fd = socket(PF_INET, SOCK_STREAM, 0);
+		int fd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 		if (fd < 0) printf("invalid fd in select: %d\n", fd);
 		if (fd > maxFd) maxFd = fd;
 		FD_SET(fd, &rfds);
@@ -742,14 +742,19 @@ void poll_test(struct timespec *diffTime) {
 	}
 	return;
 }
-/*
-void epoll_test(struct timespec *diffTime) {
+
+void kqueue_test(struct timespec *diffTime) {
 	struct timespec startTime, endTime;
 	int retval;
+	struct timespec tv;
+
+        tv.tv_sec = 0;
+        tv.tv_nsec = 0;
 
 	int fds[fd_count];
+	struct kevent events[fd_count];
 
-	int epfd = epoll_create(fd_count);
+	int kqfd = kqueue();
 
 	for (int i = 0; i < fd_count; i++) {
 		char name[10];
@@ -766,41 +771,33 @@ void epoll_test(struct timespec *diffTime) {
 		}
 		name[index] = '\0';
 		int fd = socket(AF_INET, SOCK_STREAM, 0);
-		if (fd < 0) printf("[error] invalid fd in epoll: %d\n", fd);
+		if (fd < 0) printf("[error] invalid fd in kqueue: %d\n", fd);
 
-		struct epoll_event event;
-		event.events = EPOLLIN;
-		event.data.fd = fd;
-
-		retval = epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event);
-		if (retval == -1) {
-			printf("[error] epoll_ctl failed.\n");
-		}
-
+		EV_SET(&events[i], fd, EVFILT_READ, EV_ADD, 0, 0, 0);
 		fds[i] = fd;
 	}
 
-	struct epoll_event *events = (struct epoll_event *)malloc(fd_count * sizeof(struct epoll_event));
+	struct kevent *eventlist = (struct kevent *)malloc(fd_count * sizeof(struct kevent));
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	retval = epoll_wait(epfd, events, fd_count, 0);
+	retval = kevent(kqfd, events, fd_count, eventlist, fd_count, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
 	add_diff_to_sum(diffTime, endTime, startTime);
 
-	free(events);
+	free(eventlist);
 	if (retval != fd_count) {
-		printf("[error] epoll return unexpected: %d\n", retval);
+		printf("[error] kqueue return unexpected: %d\n", retval);
 	}
 	
-	retval = close(epfd);
-	if (retval == -1) printf ("[error] close epfd failed in epoll test %d.\n", epfd);
+	retval = close(kqfd);
+	if (retval == -1) printf ("[error] close kqfd failed in kqueue test %d.\n", kqfd);
 	for (int i = 0; i < fd_count; i++) {
 		retval = close(fds[i]);
-		if (retval == -1) printf ("[error] close failed in epoll test %d.\n", fds[i]);
+		if (retval == -1) printf ("[error] close failed in kqueue test %d.\n", fds[i]);
 	}
 	return;
 }
 
-*/
+
 
 
 void context_switch_test(struct timespec *diffTime) {
@@ -1169,7 +1166,7 @@ int main(int argc, char *argv[])
 	/*****************************************/
 	/*               GETPID                  */
 	/*****************************************/
-	
+	/*	
 	sleep(60);
 	info.iter = BASE_ITER * 100;
 	info.name = "ref";
@@ -1185,20 +1182,20 @@ int main(int argc, char *argv[])
 	one_line_test(fp, copy, getpid_test, &info);
 
 
-	
+	*/
 	/*****************************************/
 	/*            CONTEXT SWITCH             */
 	/*****************************************/
-	
+	/*
 	info.iter = BASE_ITER * 10;
 	info.name = "context siwtch";
 	one_line_test(fp, copy, context_switch_test, &info);
-	
+	*/
 
 	/*****************************************/
 	/*             SEND & RECV               */
 	/*****************************************/
-	
+	/*
 	msg_size = 1;	
 	curr_iter_limit = 50;
 	printf("msg size: %d.\n", msg_size);
@@ -1224,11 +1221,11 @@ int main(int argc, char *argv[])
 	info.name = "big recv";
 	one_line_test_v2(fp, copy, recv_test, &info);
 	
-	
+	*/
 	/*****************************************/
 	/*         FORK & THREAD CREATE          */
 	/*****************************************/
-	
+	/*
 	info.iter = BASE_ITER * 2;
 	info.name = "fork";
 	two_line_test(fp, copy, forkTest, &info);
@@ -1267,13 +1264,13 @@ int main(int argc, char *argv[])
 		munmap(pages1[i], PAGE_SIZE);
 	}
 
-	
+	*/
 	/*****************************************/
 	/*     WRITE & READ & MMAP & MUNMAP      */
 	/*****************************************/
 
 	/****** SMALL ******/
-	
+	/*
 	file_size = PAGE_SIZE;	
 	printf("file size: %d.\n", file_size);
 
@@ -1297,9 +1294,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "small page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	
+	*/
 	/****** MID ******/
-	
+	/*
 	file_size = PAGE_SIZE * 10;
 	printf("file size: %d.\n", file_size);
 
@@ -1323,9 +1320,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "mid page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	
+	*/
 	/****** BIG ******/
-	
+	/*
 	file_size = PAGE_SIZE * 1000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1349,9 +1346,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "big page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	
+	*/
         /****** HUGE ******/
-	
+	/*
 	file_size = PAGE_SIZE * 10000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1374,44 +1371,49 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "huge page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	
+	*/
 	/*****************************************/
 	/*              WRITE & READ             */
 	/*****************************************/
-
+	
 	/****** SMALL ******/
 	fd_count = 10;
 
-	info.iter = BASE_ITER * 10;
+	//info.iter = BASE_ITER * 10;
+	info.iter = 1;
 	info.name = "select";
 	one_line_test(fp, copy, select_test, &info);
 	
-	info.iter = BASE_ITER * 10;
+	//info.iter = BASE_ITER * 10;
+	info.iter = 1;
 	info.name = "poll";
 	one_line_test(fp, copy, poll_test, &info);
 
-	/*			
-	info.iter = BASE_ITER * 10;
-	info.name = "epoll";
-	one_line_test(fp, copy, epoll_test, &info);
-	*/	
+	//info.iter = BASE_ITER * 10;
+	info.iter = 1;
+	info.name = "kqueue";
+	one_line_test(fp, copy, kqueue_test, &info);
+	
 
 	/****** BIG ******/
 	fd_count = 1000;
 
-	info.iter = BASE_ITER;
+	//info.iter = BASE_ITER;
+	info.iter = 1;
 	info.name = "select big";
 	one_line_test(fp, copy, select_test, &info);
 
-	info.iter = BASE_ITER;
+	//info.iter = BASE_ITER;
+	info.iter = 1;
 	info.name = "poll big";
 	one_line_test(fp, copy, poll_test, &info);
 	
-	/*	
-	info.iter = BASE_ITER;
-	info.name = "epoll big";
-	one_line_test(fp, copy, epoll_test, &info);
-	*/	
+	
+	//info.iter = BASE_ITER;
+	info.iter = 1;
+	info.name = "kqueue big";
+	one_line_test(fp, copy, kqueue_test, &info);
+		
 
 	fclose(fp);
 	if (!isFirstIteration)
