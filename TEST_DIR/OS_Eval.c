@@ -66,6 +66,7 @@ char *new_output_fn = NULL;
 #define BASE_ITER 10000
 
 #define sock "TEST_DIR/socket"
+
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b)
 {
 	if (result->tv_nsec +a.tv_nsec < b.tv_nsec)
@@ -1268,7 +1269,7 @@ int main(int argc, char *argv[])
 	/*****************************************/
 	/*               GETPID                  */
 	/*****************************************/
-	/*	
+		
 	sleep(60);
 	info.iter = BASE_ITER * 100;
 	info.name = "ref";
@@ -1284,20 +1285,18 @@ int main(int argc, char *argv[])
 	one_line_test(fp, copy, getpid_test, &info);
 
 
-	*/
 	/*****************************************/
 	/*            CONTEXT SWITCH             */
 	/*****************************************/
-	/*
+	
 	info.iter = BASE_ITER * 10;
 	info.name = "context siwtch";
 	one_line_test(fp, copy, context_switch_test, &info);
-	*/
 
 	/*****************************************/
 	/*             SEND & RECV               */
 	/*****************************************/
-	/*
+	
 	msg_size = 1;	
 	curr_iter_limit = 50;
 	printf("msg size: %d.\n", msg_size);
@@ -1323,11 +1322,10 @@ int main(int argc, char *argv[])
 	info.name = "big recv";
 	one_line_test_v2(fp, copy, recv_test, &info);
 	
-	*/
 	/*****************************************/
 	/*         FORK & THREAD CREATE          */
 	/*****************************************/
-	/*
+	
 	info.iter = BASE_ITER * 2;
 	info.name = "fork";
 	two_line_test(fp, copy, forkTest, &info);
@@ -1366,13 +1364,12 @@ int main(int argc, char *argv[])
 		munmap(pages1[i], PAGE_SIZE);
 	}
 
-	*/
 	/*****************************************/
 	/*     WRITE & READ & MMAP & MUNMAP      */
 	/*****************************************/
 
 	/****** SMALL ******/
-	/*
+	
 	file_size = PAGE_SIZE;	
 	printf("file size: %d.\n", file_size);
 
@@ -1396,9 +1393,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "small page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	*/
+	
 	/****** MID ******/
-	/*
+	
 	file_size = PAGE_SIZE * 10;
 	printf("file size: %d.\n", file_size);
 
@@ -1422,9 +1419,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "mid page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	*/
+	
 	/****** BIG ******/
-	/*
+	
 	file_size = PAGE_SIZE * 1000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1448,9 +1445,9 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "big page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	*/
+	
         /****** HUGE ******/
-	/*
+	
 	file_size = PAGE_SIZE * 10000;	
 	printf("file size: %d.\n", file_size);
 
@@ -1473,7 +1470,7 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 5;
 	info.name = "huge page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	*/
+	
 	/*****************************************/
 	/*              WRITE & READ             */
 	/*****************************************/
@@ -1482,18 +1479,15 @@ int main(int argc, char *argv[])
 	
 	fd_count = 10;
 
-	//info.iter = BASE_ITER * 10;
-	info.iter = 1;
+	info.iter = BASE_ITER * 10;
 	info.name = "select";
 	one_line_test(fp, copy, select_test, &info);
 		
-	//info.iter = BASE_ITER * 10;
-	info.iter = 1;
+	info.iter = BASE_ITER * 10;
 	info.name = "poll";
 	one_line_test(fp, copy, poll_test, &info);
 	
-	//info.iter = BASE_ITER * 10;
-	info.iter = 1;
+	info.iter = BASE_ITER * 10;
 	info.name = "kqueue";
 	one_line_test(fp, copy, kqueue_test, &info);
 
@@ -1501,19 +1495,16 @@ int main(int argc, char *argv[])
 	fd_count = 1000;
 
 		
-	//info.iter = BASE_ITER;
-	info.iter = 1;
+	info.iter = BASE_ITER;
 	info.name = "select big";
 	one_line_test(fp, copy, select_test, &info);
 	
 
-	//info.iter = BASE_ITER;
-	info.iter = 1;
+	info.iter = BASE_ITER;
 	info.name = "poll big";
 	one_line_test(fp, copy, poll_test, &info);
 	
-	//info.iter = BASE_ITER;
-	info.iter = 1;
+	info.iter = BASE_ITER;
 	info.name = "kqueue big";
 	one_line_test(fp, copy, kqueue_test, &info);
 
