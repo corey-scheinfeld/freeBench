@@ -31,6 +31,7 @@
 #include <sys/un.h>
 #include <sys/errno.h>
 #include <sys/select.h>
+#include <math.h>
 
 int counter=3;
 bool  isFirstIteration = false;
@@ -234,6 +235,83 @@ struct timespec *calc_k_closest(struct timespec *timeArray, int size)
 	return result;
 
 }
+
+struct timespec *calc_min_max(struct timespec *timeArray, int size, bool comp_type)
+{
+
+	struct timespec *val = (struct timespec *)malloc(sizeof(struct timespec));
+
+	if(DEBUG) printf("in calc_min_max\n");
+	qsort(timeArray, size, sizeof(struct timespec), comp);
+
+	if(comp_type){
+	//true for min
+		val->tv_sec = timeArray[0].tv_sec;
+		val->tv_nsec = timeArray[0].tv_nsec;
+	} else {
+	//false for max
+		val->tv_sec = timeArray[size-1].tv_sec;
+		val->tv_nsec = timeArray[size-1].tv_nsec;
+	}
+
+	return val;
+}
+
+void calc_sq_diff(struct timespec *time, struct timespec *average, struct timespec *sq_diff){
+
+	if ((time->tv_nsec - average->tv_nsec) < 0) {
+		sq_diff->tv_sec = time->tv_sec - average->tv_sec - 1;
+		sq_diff->tv_nsec = time->tv_nsec - average->tv_nsec + 1000000000;
+	} else {
+		sq_diff->tv_sec = time->tv_sec - average->tv_sec;
+		sq_diff->tv_nsec = time->tv_nsec - average->tv_nsec;
+	}
+
+}
+
+struct timespec *calc_variance(struct timespec *timeArray, int size, struct timespec *average){
+	
+	if(DEBUG) printf("in calc_variance\n");
+
+	struct timespec* sqDiffArray = (struct timespec *)malloc(sizeof(struct timespec) * size);
+		
+	for (int i = 0; i < size; i ++) 
+	{
+		struct timespec *curr = &timeArray[i];
+
+		calc_sq_diff(curr, average, &sqDiffArray[i]);		
+	}
+
+	struct timespec *sum = calc_sum2(sqDiffArray, size);
+	struct timespec *variance = calc_average(sum, size);
+
+	if(DEBUG) printf("result %ld.%09ld\n", variance->tv_sec, variance->tv_nsec);
+	
+	free(sqDiffArray);
+	free(sum);
+	return variance;
+
+}
+
+
+struct timespec *calc_stddev(struct timespec *timeArray, int size, struct timespec *variance){
+	
+	if(DEBUG) printf("in calc_stddev\n");
+
+	struct timespec *stddev = (struct timespec *)malloc(sizeof(struct timespec));
+	
+	double variance_fp  = (double)(variance->tv_sec) + (double)(variance->tv_nsec / 1000000000);
+	
+	double stddev_fp  = sqrt(variance_fp); 
+
+	stddev->tv_nsec = modf(stddev_fp, (double *)&stddev->tv_sec); 
+ 
+	if(DEBUG) printf("result %ld.%09ld\n", stddev->tv_sec, stddev->tv_nsec);
+	
+	return stddev;
+
+}
+
 
 void one_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*), testInfo *info){
 	struct timespec testStart, testEnd;
@@ -646,7 +724,7 @@ void munmap_test(struct timespec *diffTime) {
 
 	int fd =open("test_file.txt", O_RDWR);
 	if(fd < 0) printf("invalid fd%d\n", fd);
-	void *addr = (void *)(intptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_WRITE, MAP_PRIVATE, fd, 0);
 	for (int i = 0; i < file_size; i++) {
 		((char *)addr)[i] = 'b';
 	}
@@ -1220,7 +1298,6 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 
 int main(int argc, char *argv[])
 {
-
 	output_fn = (char *)malloc(500*sizeof(char));
 	strcpy(output_fn, home);
 	strcat(output_fn, OUTPUT_FN);
@@ -1269,7 +1346,7 @@ int main(int argc, char *argv[])
 	/*****************************************/
 	/*               GETPID                  */
 	/*****************************************/
-		
+	
 	sleep(60);
 	info.iter = BASE_ITER * 100;
 	info.name = "ref";
@@ -1279,12 +1356,10 @@ int main(int argc, char *argv[])
 	info.name = "cpu";
 	one_line_test(fp, copy, cpu_test, &info);
 
-
 	info.iter = BASE_ITER * 100;
 	info.name = "getpid";
 	one_line_test(fp, copy, getpid_test, &info);
-
-
+	
 	/*****************************************/
 	/*            CONTEXT SWITCH             */
 	/*****************************************/
@@ -1292,7 +1367,7 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "context siwtch";
 	one_line_test(fp, copy, context_switch_test, &info);
-
+	
 	/*****************************************/
 	/*             SEND & RECV               */
 	/*****************************************/
@@ -1363,25 +1438,24 @@ int main(int argc, char *argv[])
 	for (int i = 0; i < page_count; i++) {
 		munmap(pages1[i], PAGE_SIZE);
 	}
-
+	
 	/*****************************************/
 	/*     WRITE & READ & MMAP & MUNMAP      */
 	/*****************************************/
 
 	/****** SMALL ******/
-	
 	file_size = PAGE_SIZE;	
 	printf("file size: %d.\n", file_size);
 
 	info.iter = BASE_ITER * 10;
 	info.name = "small write";
 	one_line_test(fp, copy, write_test, &info);
-      
+
 	info.iter = BASE_ITER * 10; 
 	info.name = "small read";
 	read_warmup();
 	one_line_test(fp, copy, read_test, &info);
-	
+
 	info.iter = BASE_ITER * 10;
 	info.name = "small mmap";
 	one_line_test(fp, copy, mmap_test, &info);
@@ -1389,10 +1463,11 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "small munmap";
 	one_line_test(fp, copy, munmap_test, &info);
-
+	
 	info.iter = BASE_ITER * 5;
 	info.name = "small page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
+
 	
 	/****** MID ******/
 	
@@ -1402,12 +1477,12 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "mid write";
 	one_line_test(fp, copy, write_test, &info);
-	
+
 	info.iter = BASE_ITER * 10;
 	info.name = "mid read";
 	read_warmup();
 	one_line_test(fp, copy, read_test, &info);
-
+	
 	info.iter = BASE_ITER * 10;
 	info.name = "mid mmap";
 	one_line_test(fp, copy, mmap_test, &info);
@@ -1415,11 +1490,12 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "mid munmap";
 	one_line_test(fp, copy, munmap_test, &info);
-
+	
 	info.iter = BASE_ITER * 5;
 	info.name = "mid page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
 	
+
 	/****** BIG ******/
 	
 	file_size = PAGE_SIZE * 1000;	
@@ -1441,11 +1517,12 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER / 4;
 	info.name = "big munmap";
 	one_line_test(fp, copy, munmap_test, &info);
-	
+
 	info.iter = BASE_ITER * 5;
 	info.name = "big page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
 	
+
         /****** HUGE ******/
 	
 	file_size = PAGE_SIZE * 10000;	
@@ -1454,7 +1531,7 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER / 4;
 	info.name = "huge write";
 	one_line_test(fp, copy, write_test, &info);
-
+	
 	info.iter = BASE_ITER;
 	info.name = "huge read";
 	one_line_test(fp, copy, read_test, &info);
@@ -1466,11 +1543,11 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER / 4; 
 	info.name = "huge munmap";
 	one_line_test(fp, copy, munmap_test, &info);
-
+	
 	info.iter = BASE_ITER * 5;
 	info.name = "huge page fault";
 	one_line_test(fp, copy, page_fault_test, &info);
-	
+
 	/*****************************************/
 	/*              WRITE & READ             */
 	/*****************************************/
@@ -1490,15 +1567,14 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER * 10;
 	info.name = "kqueue";
 	one_line_test(fp, copy, kqueue_test, &info);
-
+	
 	/****** BIG ******/
+	
 	fd_count = 1000;
 
-		
 	info.iter = BASE_ITER;
 	info.name = "select big";
 	one_line_test(fp, copy, select_test, &info);
-	
 
 	info.iter = BASE_ITER;
 	info.name = "poll big";
@@ -1507,7 +1583,7 @@ int main(int argc, char *argv[])
 	info.iter = BASE_ITER;
 	info.name = "kqueue big";
 	one_line_test(fp, copy, kqueue_test, &info);
-
+	
 	fclose(fp);
 	if (!isFirstIteration)
 	{
@@ -1526,5 +1602,6 @@ int main(int argc, char *argv[])
 	struct timespec *diffTime = calc_diff(&startTime, &endTime);
 	printf("Test took: %ld.%09ld seconds\n",diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
+	remove("test_file.txt");
 	return(0);
 }
