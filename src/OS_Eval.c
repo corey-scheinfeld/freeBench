@@ -488,31 +488,6 @@ void two_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*,struct times
 	return;
 }
 
-void cpu_test(struct timespec *diffTime) {
-	struct timespec startTime, endTime;
-
-	double start = 9903290.789798798;
-	double div = 3232.32;
-	clock_gettime(CLOCK_MONOTONIC,&startTime);
-	for (int i = 0; i < 500000; i ++) {
-	  start = start / div;
-	}
-	clock_gettime(CLOCK_MONOTONIC,&endTime);
-
-	add_diff_to_sum(diffTime, endTime, startTime);
-	return;
-}
-
-void ref_test(struct timespec *diffTime) {
-	struct timespec startTime, endTime;
-
-	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	clock_gettime(CLOCK_MONOTONIC,&endTime);
-	
-	add_diff_to_sum(diffTime, endTime, startTime);
-	return;
-}
-
 
 int fd_count = -1; 
 void select_test(struct timespec *diffTime) {
