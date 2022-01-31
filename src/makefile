@@ -1,7 +1,14 @@
-CC=gcc 
-libs=-pthread -O0 -lm
+CC=gcc
+LDFLAGS=-pthread -O0 -lm
 CFLAGS=-g
-OS_Eval: OS_Eval.c
-	$(CC) -o OS_Eval $(libs) $(CFLAGS) OS_Eval.c 
-two_line_test: two_line_test.c
-	$(CC) -o two_line_test $(libs) $(CFLAGS) two_line_test.c 
+OBJECTS=OS_Eval.o forkTest.o threadTest.o getpid_test.o read_test.o write_test.o mmap_test.o
+TARGET=OS_Eval
+
+all: $(TARGET)
+
+$(TARGET):$(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS) $(LDFLAGS)
+
+clean:
+	rm -rf OS_Eval forkTest threadTest getpid_test read_test write_test mmap_test\
+	OS_Eval.o forkTest.o threadTest.o getpid_test.o read_test.o write_test.o mmap_test.o

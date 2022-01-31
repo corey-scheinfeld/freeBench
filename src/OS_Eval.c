@@ -1,41 +1,8 @@
-#define __BSD_VISIBLE 1
-#define FD_SETSIZE 2000
-#include <sys/cdefs.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/param.h>
-#include <sys/cpuset.h>
-#include <sched.h>
-#include <time.h>
-#include <unistd.h>
-#include <time.h>
-#include <string.h>
-#include <strings.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <sys/mman.h>
-#include <sys/wait.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <signal.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/poll.h>
-#include <sys/event.h>
-#include <sys/resource.h>
-#include <sys/time.h>
-#include <sys/un.h>
-#include <sys/errno.h>
-#include <sys/select.h>
-#include <math.h>
+#include "OS_Eval.h"
 
 int counter=3;
 bool  isFirstIteration = false;
-const char *home = "/home/corey/LEBench/";
+const char *home = "/home/corey/freeBench/src";
 char *output_fn = NULL;
 char *new_output_fn = NULL;
 #define setup 		(struct timespec *fp) \
@@ -67,6 +34,7 @@ char *new_output_fn = NULL;
 #define BASE_ITER 10000
 
 #define sock "TEST_DIR/socket"
+
 
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b)
 {
@@ -103,9 +71,6 @@ struct timespec *calc_diff(struct timespec *smaller, struct timespec *bigger)
 	return diff;
 }
 
-
-struct timespec *timeB;
-struct timespec *timeD;
 
 struct timespec* calc_average(struct timespec *sum, int size)
 {
@@ -180,11 +145,6 @@ int comp(const void *ele1, const void *ele2)
 		return -1;
 	}
 }
-
-typedef struct testInfo {
-	int iter;
-	const char *name;
-} testInfo;
 
 #define INPRECISION 0.05
 #define K 5
@@ -525,153 +485,6 @@ void two_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*,struct times
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
 	printf("Test took: %ld.%09ld seconds\n",diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
-	return;
-}
-
-void forkTest(struct timespec *childTime, struct timespec *parentTime) 
-{
-    struct timespec timeA;
-    struct timespec timeC;
-    timeB = mmap(NULL, sizeof(struct timespec), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    int status;
-    clock_gettime(CLOCK_MONOTONIC,&timeA);
-
-    int forkId = fork();
-    if (forkId == 0){
-        clock_gettime(CLOCK_MONOTONIC, timeB);
-        kill(getpid(),SIGINT);
-	printf("[error] unable to kill child process\n");
-	return;
-    } else if (forkId > 0){
-        clock_gettime(CLOCK_MONOTONIC,&timeC);
-        wait(&status);
-	add_diff_to_sum(childTime,*timeB,timeA);
-	add_diff_to_sum(parentTime,timeC,timeA);
-    } else {
-    	printf("[error] fork failed.\n");
-    }
-    munmap(timeB, sizeof(struct timespec));
-    return;
-}
-
-void *thrdfnc(void *args)
-{
-	clock_gettime(CLOCK_MONOTONIC,timeB);
-	pthread_exit(NULL);
-}
-
-void threadTest(struct timespec *childTime, struct timespec *parentTime)
-{
-	struct timespec timeC;
-	timeB=(struct timespec *)malloc(sizeof(struct timespec));
-	timeD=(struct timespec *)malloc(sizeof(struct timespec));
-	pthread_t newThrd;
-	clock_gettime(CLOCK_MONOTONIC,timeD);
-	int er = pthread_create (&newThrd, NULL, thrdfnc, NULL);
-	clock_gettime(CLOCK_MONOTONIC,&timeC);
-	pthread_join(newThrd,NULL);
-
-	add_diff_to_sum(parentTime,timeC,*timeD);
-	add_diff_to_sum(childTime,*timeB,*timeD);
-	
-	free(timeB);
-	timeB = NULL;
-	free(timeD);
-	timeD = NULL;
-	return;
-}
-
-void getpid_test(struct timespec *diffTime) {
-	struct timespec startTime, endTime;
-	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	syscall(SYS_getpid);
-	clock_gettime(CLOCK_MONOTONIC, &endTime);
-	add_diff_to_sum(diffTime, endTime, startTime);
-	return;
-
-}
-
-int file_size = -1;
-void read_test(struct timespec *diffTime) { 
-	struct timespec startTime, endTime;
-	char *buf_in = (char *) malloc (sizeof(char) * file_size);
-
-	int fd =open("test_file.txt", O_RDONLY);
-	if (fd < 0) printf("invalid fd in read: %d\n", fd);
-	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	syscall(SYS_read, fd, buf_in, file_size);
-	clock_gettime(CLOCK_MONOTONIC, &endTime);
-	close(fd);
-	
-	add_diff_to_sum(diffTime, endTime, startTime);
-	free(buf_in);
-	return;
-
-}
-
-void read_warmup() {
-
-	char *buf_out = (char *) malloc (sizeof(char) * file_size);
-	for (int i = 0; i < file_size; i++) {
-		buf_out[i] = 'a';
-	}
-
-	int fd = open("test_file.txt", O_CREAT | O_WRONLY);
-	if (fd < 0) printf("invalid fd in write: %d\n", fd);
-
-	syscall(SYS_write, fd, buf_out, file_size);
-	close(fd);	
-
-	char *buf_in = (char *) malloc (sizeof(char) * file_size);
-
-	fd =open("test_file.txt", O_RDONLY);
-	if (fd < 0) printf("invalid fd in read: %d\n", fd);
-	
-	for (int i = 0; i < 1000; i ++) {
-		syscall(SYS_read, fd, buf_in, file_size);
-	}
-	close(fd);
-
-	free(buf_out);
-	free(buf_in);
-	return;
-
-}
-void write_test(struct timespec *diffTime) {
-	struct timespec startTime, endTime;
-
-	char *buf = (char *) malloc (sizeof(char) * file_size);
-	for (int i = 0; i < file_size; i++) {
-		buf[i] = 'a';
-	}
-	int fd = open("test_file.txt", O_CREAT | O_WRONLY);
-	if (fd < 0) printf("invalid fd in write: %d\n", fd);
-
-	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	syscall(SYS_write, fd, buf, file_size);
-	clock_gettime(CLOCK_MONOTONIC,&endTime);
-	
-	close(fd);
-		
-	add_diff_to_sum(diffTime, endTime, startTime);
-	free(buf);
-	return;
-}
-
-
-void mmap_test(struct timespec *diffTime) {
-	struct timespec startTime, endTime;
-
-	int fd =open("test_file.txt", O_RDONLY);
-	if (fd < 0) printf("invalid fd%d\n", fd);
-
-	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	void *addr = (void *)(intptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	clock_gettime(CLOCK_MONOTONIC,&endTime);
-	
-	syscall(SYS_munmap, addr, file_size);
-        close(fd);
-	add_diff_to_sum(diffTime, endTime, startTime);
 	return;
 }
 
