@@ -1,6 +1,5 @@
 #include "OS_Eval.h"
 
-int file_size = -1;
 void read_test(struct timespec *diffTime) { 
 	struct timespec startTime, endTime;
 	char *buf_in = (char *) malloc (sizeof(char) * file_size);
