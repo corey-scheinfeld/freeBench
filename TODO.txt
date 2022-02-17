@@ -1,0 +1,25 @@
+Analyzing the Performance Evolution of freeBSD Core Kernel Operations
+
+A Thesis by Corey Scheinfeld
+
+Advised by Professor Pete Johnson
+
+
+-----------TODO-----------
+
+* Measurement decision for operation latency.
+	*KBest source description and reasoning.
+*Loaner laptop for direct booting into freeBSD OS versions.
+*calculate min/max/avg/stddev/variance for understanding variance within 10k benchmark runs.
+*code revisions for freeBench
+	*look into what __syscall does with 64-bit return values from, eg, mmap
+	*document differences between epoll's POLL_IN and kqueue's EVFILT_READ.
+	*document differences between context_switch_test and parameters to sched_setaffinity and cpuset_setaffinity.
+	*test intermediate syscalls for immediate return upon failure. 
+	*modify poll_test and kqueue_test, to stay consistent with LEBench use of AF_INET sockets versus PF_UNIX sockets.
+
+
+-----------TECHNICAL NOTES AND OBSERVATIONS-----------
+
+EPOLL VS KQUEUE
+- 
