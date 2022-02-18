@@ -35,6 +35,7 @@
 #include <sys/select.h>
 #include <math.h>
 
+#define sock "test_sockets/socket"
 
 typedef struct testInfo {
 	int iter;
@@ -42,6 +43,8 @@ typedef struct testInfo {
 } testInfo;
 
 extern int file_size;
+extern int fd_count;
+extern char* home;
 
 void forkTest(struct timespec *childTime, struct timespec *parentTime); 
 void threadTest(struct timespec *childTime, struct timespec *parentTime);
