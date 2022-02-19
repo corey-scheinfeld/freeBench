@@ -38,6 +38,8 @@
 #define sock "test_sockets/socket"
 #define DEBUG false
 
+
+
 typedef struct testInfo {
 	int iter;
 	const char *name;
@@ -49,9 +51,16 @@ extern char* home;
 extern int msg_size;
 extern int curr_iter_limit;
 
+void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b);
+
+void one_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*), testInfo *info);
+void one_line_test_v2(FILE *fp, FILE *copy, void (*f)(struct timespec*, int, int *), testInfo *info);
+void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info);
+
+struct timespec* calc_average(struct timespec *sum, int size);
+
 void forkTest(struct timespec *childTime, struct timespec *parentTime); 
 void threadTest(struct timespec *childTime, struct timespec *parentTime);
-void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b);
 void getpid_test(struct timespec *diffTime);
 void read_test(struct timespec *diffTime);
 void read_warmup();

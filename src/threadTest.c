@@ -29,3 +29,16 @@ void threadTest(struct timespec *childTime, struct timespec *parentTime)
 	timeD = NULL;
 	return;
 }
+
+int main(int argc, char *argv[]){
+	testInfo info;
+
+        if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
+
+        int iteration = atoi(argv[1]);
+	info.name = "thr create";
+	info.iter = iteration;
+
+	two_line_test(threadTest, &info);
+
+}
