@@ -13,7 +13,7 @@ mkdir ../data/$1/$2
 
 ##### CPU #####
 
-./cpu_test 100  > ../data/$1/$2/cpu_test_data
+./cpu_test 100  > ../data/$1/$2/cpu_data.csv
 
 ##### GETPID #####
 ./getpid_test $(($BASE_ITER*100)) > ../data/$1/$2/getpid_data.csv
@@ -52,7 +52,7 @@ mkdir ../data/$1/$2
 ./read_test       mid $(($BASE_ITER*10)) > ../data/$1/$2/read_mid_data.csv
 ./mmap_test       mid $(($BASE_ITER*10)) > ../data/$1/$2/mmap_mid_data.csv
 ./munmap_test     mid $(($BASE_ITER*10)) > ../data/$1/$2/munmap_mid_data.csv
-./page_fault_test mid $(($BASE_ITER*5))  > ../data/$1/$2/pagee_fault_mid_data.csv
+./page_fault_test mid $(($BASE_ITER*5))  > ../data/$1/$2/page_fault_mid_data.csv
 
 ## BIG ##
 

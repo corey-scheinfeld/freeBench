@@ -1,5 +1,17 @@
 #include "OS_Eval.h"
 
+typedef struct testSpec {
+        int page_count;
+        const char *name;
+} testSpec;
+
+testSpec tests[] = {
+	{0, "base"},
+	{6000, "big"},
+	{12000, "huge"},
+	{-1, ""}
+};
+
 void forkTest(struct timespec *childTime, struct timespec *parentTime) 
 {
     struct timespec timeA;
@@ -31,55 +43,32 @@ int main(int argc, char *argv[])
 	testInfo info;
 	int page_count;
 	
-	if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
+	if (argc != 3){fprintf(stderr, "Invalid arguments, gave %d not 3.\n",argc);return(0);}
 	
-	char *test_size = argv[1];
-	int iteration = atoi(argv[2]);
+	char *test_type = argv[1];
+	info.iter = atoi(argv[2]);
 
-	info.iter = iteration;
-
-	if(strcmp(test_size, "base") == 0){
-		info.name = "fork";
-
-		two_line_test(forkTest, &info);
+	testSpec *option;
+	for(option=&tests[0]; option->name; option++){
+		if(strcmp(option->name, test_type) == 0){break;}
 	}
 
-	else if(strcmp(test_size, "big") == 0){
-		info.name = "big fork";
+	if (option->page_count == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
-		page_count = 6000;
-		void *pages[page_count];
-		for (int i = 0; i < page_count; i++) {
-    			pages[i] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-		}
+	page_count = option->page_count;
+	info.name = strcat(test_type, "fork");
 
-		two_line_test(forkTest, &info);
-
-		for (int i = 0; i < page_count; i++) {
-			munmap(pages[i], PAGE_SIZE);
-		}
-
+	void *pages[page_count];
+	for (int i = 0; i < page_count; i++) {
+    		pages[i] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 	}
 
-	else if(strcmp(test_size, "huge") == 0){
-		info.name = "huge fork";
+	two_line_test(forkTest, &info);
 
-		page_count = 12000;
-		printf("Page count: %d.\n", page_count);
-		void *pages1[page_count];
-		for (int i = 0; i < page_count; i++) {
-    			pages1[i] = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-		}
-
-		two_line_test(forkTest, &info);
-
-		for (int i = 0; i < page_count; i++) {
-			munmap(pages1[i], PAGE_SIZE);
-		}
+	for (int i = 0; i < page_count; i++) {
+		munmap(pages[i], PAGE_SIZE);
 	}
 
-	else{printf("Invalid arguments, fork test type not valid.\n");return(0);}
-
-
+	return(0);
 }
 

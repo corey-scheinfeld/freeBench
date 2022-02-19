@@ -85,28 +85,22 @@ int main(int argc, char *argv[]){
 
         if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
 
-        char *test_size = argv[1];
-        int iteration = atoi(argv[2]);
+        char *test_type = argv[1];
+        info.iter = atoi(argv[2]);
 
-        info.iter = iteration;
-
-
-        if(strcmp(test_size, "small") == 0){
-                fd_count = 10;
-
-                info.name = "small poll";
-
-                one_line_test(poll_test, &info);
+        fdSpec *option;
+        for(option=&fd_tests[0]; option->name; option++){
+                if(strcmp(option->name, test_type) == 0){break;}
         }
 
-        else if(strcmp(test_size, "big") == 0){
-                fd_count = 1000;
+        if (option->fd_count == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
-                info.name = "big poll";
+        fd_count = option->fd_count;
+        info.name = strcat(test_type, "poll");
 
-                one_line_test(poll_test, &info);
-        }
+        one_line_test(poll_test, &info);
 
+        return(0);
 
-        else{printf("Invalid arguments, poll test type not valid.\n");return(0);}
+	
 }

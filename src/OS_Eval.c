@@ -7,6 +7,27 @@ int fd_count = -1;
 int msg_size = -1;
 int curr_iter_limit = -1;
 
+fileSpec file_tests[] = {
+        {PAGE_SIZE, "small"},
+        {PAGE_SIZE*10, "mid"},
+        {PAGE_SIZE*1000, "big"},
+        {PAGE_SIZE*10000, "huge"},
+        {-1, ""}
+};
+
+fdSpec fd_tests[] = {
+        {10, "base"},
+        {1000, "big"},
+	{-1, ""}
+};
+
+msgSpec msg_tests[] = {
+        {1, 50, "base"},
+        {96000, 1,  "big"},
+        {-1, -1, ""}
+};
+
+
 #define setup 		(struct timespec *fp) \
 			{struct timespec timeA ; \
 			struct timespec timeC; \

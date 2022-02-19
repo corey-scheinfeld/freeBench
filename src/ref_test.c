@@ -15,9 +15,7 @@ int main(int argc, char *argv[]){
 
         if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
 
-        int iteration = atoi(argv[1]);
-
-        info.iter = iteration;
+        info.iter = atoi(argv[1]);
         info.name = "ref";
         one_line_test(ref_test, &info);
 

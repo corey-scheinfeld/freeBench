@@ -16,9 +16,7 @@ int main(int argc, char *argv[]){
 
 	if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
 
-        int iteration = atoi(argv[1]);
-
-	info.iter = iteration;
+	info.iter = atoi(argv[1]);
 	info.name = "getpid";
 	one_line_test(getpid_test, &info);
 }

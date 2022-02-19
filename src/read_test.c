@@ -51,47 +51,22 @@ int main(int argc, char *argv[]){
        
         if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
 
-        char *test_size = argv[1];
-        int iteration = atoi(argv[2]);
+        char *test_type = argv[1];
+        info.iter = atoi(argv[2]);
 
-        info.iter = iteration;
-
-	
-        if(strcmp(test_size, "small") == 0){
-		file_size = PAGE_SIZE;	
-
-                info.name = "small read";
-
-		read_warmup();
-                one_line_test(read_test, &info);
+        fileSpec *option;
+        for(option=&file_tests[0]; option->name; option++){
+                if(strcmp(option->name, test_type) == 0){break;}
         }
 
-        else if(strcmp(test_size, "mid") == 0){
-		file_size = PAGE_SIZE * 10;	
+        if (option->file_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
-                info.name = "mid read";
-		
-		read_warmup();
-                one_line_test(read_test, &info);
-        }
+	file_size = option->file_size;
+        info.name = strcat(test_type, "read");
 
-        else if(strcmp(test_size, "big") == 0){
-                file_size = PAGE_SIZE * 1000;	
+	if (!(strcmp(info.name, "huge") == 0)){read_warmup();}
+        one_line_test(read_test, &info);
 
-                info.name = "big read";
-		
-		read_warmup();
-                one_line_test(read_test, &info);
-        }
-
-	else if(strcmp(test_size, "huge") == 0){
-                file_size = PAGE_SIZE * 10000;	
-
-                info.name = "huge read";
-		
-                one_line_test(read_test, &info);
-        }
-
-        else{printf("Invalid arguments, read test type not valid.\n");return(0);}
+        return(0);
 
 }

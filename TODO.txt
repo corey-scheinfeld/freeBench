@@ -9,7 +9,6 @@ Advised by Professor Pete Johnson
 
 * Measurement decision for operation latency.
 	*KBest source description and reasoning.
-*Loaner laptop for direct booting into freeBSD OS versions.
 *calculate min/max/avg/stddev/variance for understanding variance within 10k benchmark runs.
 *code revisions for freeBench
 	*look into what __syscall does with 64-bit return values from, eg, mmap

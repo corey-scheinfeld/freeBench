@@ -126,30 +126,21 @@ int main(int argc, char *argv[]){
 
         if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
 
-        char *test_size = argv[1];
-        int iteration = atoi(argv[2]);
+        char *test_type = argv[1];
+        info.iter = atoi(argv[2]);
 
-        info.iter = iteration;
-
-
-        if(strcmp(test_size, "base") == 0){
-                msg_size = 1;
-                curr_iter_limit = 50;
-
-                info.name = "base recv";
-
-                one_line_test_v2(recv_test, &info);
+        msgSpec *option;
+        for(option=&msg_tests[0]; option->name; option++){
+                if(strcmp(option->name, test_type) == 0){break;}
         }
 
-        else if(strcmp(test_size, "big") == 0){
-                msg_size = 96000;
-                curr_iter_limit = 1;
+        if (option->msg_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
-                info.name = "big recv";
+        msg_size = option->msg_size;
+        curr_iter_limit = option->curr_iter_limit;
+        info.name = strcat(test_type, "recv");
 
-                one_line_test_v2(recv_test, &info);
-        }
+        one_line_test_v2(recv_test, &info);
 
-
-        else{printf("Invalid arguments, recv test type not valid.\n");return(0);}
+        return(0);	
 }

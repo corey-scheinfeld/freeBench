@@ -38,18 +38,37 @@
 #define sock "test_sockets/socket"
 #define DEBUG false
 
-
+extern int file_size;
+extern int fd_count;
+extern int msg_size;
+extern int curr_iter_limit;
 
 typedef struct testInfo {
 	int iter;
 	const char *name;
 } testInfo;
 
-extern int file_size;
-extern int fd_count;
+typedef struct fileSpec {
+        int file_size;
+        const char *name;
+} fileSpec;
+
+typedef struct fdSpec {
+        int fd_count;
+        const char *name;
+} fdSpec;
+
+typedef struct msgSpec {
+        int msg_size;
+	int curr_iter_limit;
+        const char *name;
+} msgSpec;
+
+extern fdSpec fd_tests[];
+extern fileSpec file_tests[];
+extern msgSpec msg_tests[];
+
 extern char* home;
-extern int msg_size;
-extern int curr_iter_limit;
 
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b);
 struct timespec* calc_average(struct timespec *sum, int size);

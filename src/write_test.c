@@ -26,43 +26,21 @@ int main(int argc, char *argv[]){
 
         if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
 
-        char *test_size = argv[1];
-        int iteration = atoi(argv[2]);
+        char *test_type = argv[1];
+        info.iter = atoi(argv[2]);
 
-        info.iter = iteration;
-
-
-        if(strcmp(test_size, "small") == 0){
-                file_size = PAGE_SIZE;
-
-                info.name = "small write";
-
-                one_line_test(write_test, &info);
+	fileSpec *option;
+        for(option=&file_tests[0]; option->name; option++){
+                if(strcmp(option->name, test_type) == 0){break;}
         }
 
-        else if(strcmp(test_size, "mid") == 0){
-                file_size = PAGE_SIZE * 10;
+        if (option->file_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
-                info.name = "mid write";
+        file_size = option->file_size;
+        info.name = strcat(test_type, "write");
 
-                one_line_test(write_test, &info);
-        }
+        one_line_test(write_test, &info);
 
-        else if(strcmp(test_size, "big") == 0){
-                file_size = PAGE_SIZE * 1000;
+        return(0);
 
-                info.name = "big write";
-
-                one_line_test(write_test, &info);
-        }
-
-        else if(strcmp(test_size, "huge") == 0){
-                file_size = PAGE_SIZE * 10000;
-
-                info.name = "huge write";
-
-                one_line_test(write_test, &info);
-        }
-
-        else{printf("Invalid arguments, write test type not valid.\n");return(0);}
 }
