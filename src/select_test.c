@@ -75,3 +75,34 @@ void select_test(struct timespec *diffTime) {
 	free(server_adds);
 	return;
 }
+
+int main(int argc, char *argv[]){
+	testInfo info;
+
+        if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
+
+        char *test_size = argv[1];
+        int iteration = atoi(argv[2]);
+
+        info.iter = iteration;
+
+
+        if(strcmp(test_size, "small") == 0){
+		fd_count = 10;
+
+                info.name = "small select";
+
+                one_line_test(select_test, &info);
+        }
+
+        else if(strcmp(test_size, "big") == 0){
+                fd_count = 1000;
+
+                info.name = "big select";
+
+                one_line_test(select_test, &info);
+        }
+
+       
+        else{printf("Invalid arguments, select test type not valid.\n");return(0);}
+}

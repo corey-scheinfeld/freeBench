@@ -271,14 +271,12 @@ struct timespec *calc_stddev(struct timespec *timeArray, int size, struct timesp
 	return stddev;
 }
 
-void one_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*), testInfo *info){
+void one_line_test(void (*f)(struct timespec*), testInfo *info){
 	struct timespec testStart, testEnd;
 	clock_gettime(CLOCK_MONOTONIC,&testStart);
 
-	printf("Performing test %s.\n", info->name);
-
+	printf("OS Benchmark %s experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);  	
 	int runs = info->iter;
-	printf("Total test iterations %d.\n", runs);
 
 	struct timespec* timeArray = (struct timespec *)malloc(sizeof(struct timespec) * runs);
 	for (int i=0; i < runs; i++) {
@@ -286,49 +284,14 @@ void one_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*), testInfo *
 		timeArray[i].tv_nsec = 0;
 		(*f)(&timeArray[i]);
 
-		printf("Test iteration %d took: %ld.%09ld seconds\n",timeArray[i].tv_sec, timeArray[i].tv_nsec); 
+		printf("      %s time:, iter %d,  %ld.%09ld,\n", info->name, (i+1),timeArray[i].tv_sec, timeArray[i].tv_nsec);
 	}
-	struct timespec *sum = calc_sum2(timeArray, runs);
-	struct timespec *average = calc_average(sum, runs);  
-	struct timespec *kbest = calc_k_closest(timeArray, runs);	
 
-	if (!isFirstIteration)
-	{
-		char ch;
-		while (1)
-		{
-			ch=fgetc(copy);
-			if (ch == '\n')	break;
-			fputc(ch,fp);
-		}
-	} else {
-		fprintf(fp, "%10s", info->name);
-		fprintf(fp, "          kbest:,");
-	}
-	fprintf(fp,"%ld.%09ld,\n",kbest->tv_sec, kbest->tv_nsec); 
-
-	if (!isFirstIteration)
-	{
-		char ch;
-		while (1)
-		{
-			ch=fgetc(copy);
-			if (ch == '\n')	break;
-			fputc(ch,fp);
-		}
-	} else {
-		fprintf(fp, "%10s", info->name);
-		fprintf(fp, "        average:,");
-	}
-	fprintf(fp,"%ld.%09ld,\n",average->tv_sec, average->tv_nsec); 
-
-	free(sum);
-	free(average);
 	free(timeArray);
 
 	clock_gettime(CLOCK_MONOTONIC,&testEnd);
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
-	printf("Test took: %ld.%09ld seconds\n",diffTime->tv_sec, diffTime->tv_nsec); 
+	printf("Test total runtime:, , %ld.%09ld\n",diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 
 	return;

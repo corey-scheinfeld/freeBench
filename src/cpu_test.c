@@ -14,3 +14,18 @@ void cpu_test(struct timespec *diffTime) {
 	add_diff_to_sum(diffTime, endTime, startTime);
 	return;
 }
+
+int main(int argc, char *argv[]){
+
+	testInfo info;
+
+        if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
+
+        int iteration = atoi(argv[1]);
+
+        info.iter = iteration;
+        info.name = "cpu";
+        one_line_test(cpu_test, &info);
+
+
+}

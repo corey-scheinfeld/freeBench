@@ -53,7 +53,7 @@ extern int curr_iter_limit;
 
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b);
 
-void one_line_test(FILE *fp, FILE *copy, void (*f)(struct timespec*), testInfo *info);
+void one_line_test(void (*f)(struct timespec*), testInfo *info);
 void one_line_test_v2(FILE *fp, FILE *copy, void (*f)(struct timespec*, int, int *), testInfo *info);
 void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info);
 

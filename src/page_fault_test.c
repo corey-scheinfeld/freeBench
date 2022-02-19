@@ -19,3 +19,48 @@ void page_fault_test(struct timespec *diffTime) {
 	return;
 }
 
+int main(int argc, char *argv[]){
+	testInfo info;
+
+        if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
+
+        char *test_size = argv[1];
+        int iteration = atoi(argv[2]);
+
+        info.iter = iteration;
+
+
+        if(strcmp(test_size, "small") == 0){
+                file_size = PAGE_SIZE;
+
+                info.name = "small page_fault";
+
+                one_line_test(page_fault_test, &info);
+        }
+
+        else if(strcmp(test_size, "mid") == 0){
+                file_size = PAGE_SIZE * 10;
+
+                info.name = "mid page fault";
+
+                one_line_test(page_fault_test, &info);
+        }
+
+        else if(strcmp(test_size, "big") == 0){
+                file_size = PAGE_SIZE * 1000;
+
+                info.name = "big page fault";
+
+                one_line_test(page_fault_test, &info);
+        }
+
+        else if(strcmp(test_size, "huge") == 0){
+                file_size = PAGE_SIZE * 10000;
+
+                info.name = "huge page fault";
+
+                one_line_test(page_fault_test, &info);
+        }
+
+        else{printf("Invalid arguments, page fault test type not valid.\n");return(0);}
+}

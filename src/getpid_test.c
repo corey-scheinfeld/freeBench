@@ -10,3 +10,15 @@ void getpid_test(struct timespec *diffTime) {
 
 }
 
+int main(int argc, char *argv[]){
+
+	testInfo info;
+
+	if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
+
+        int iteration = atoi(argv[1]);
+
+	info.iter = iteration;
+	info.name = "getpid";
+	one_line_test(getpid_test, &info);
+}

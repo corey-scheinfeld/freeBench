@@ -120,3 +120,6 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 	}
 
 }
+
+int main(int arc, char *argv[]){
+}

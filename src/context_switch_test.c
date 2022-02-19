@@ -90,3 +90,17 @@ void context_switch_test(struct timespec *diffTime) {
 	diffTime->tv_nsec = diff->tv_nsec;
 	free(diff);
 }
+
+int main(int argc, char *argv[]){
+	testInfo info;
+
+        if (argc != 2){printf("Invalid arguments, gave %d not 2.\n",argc);return(0);}
+
+        int iteration = atoi(argv[1]);
+
+        info.iter = iteration;
+        info.name = "context switch";
+        one_line_test(context_switch_test, &info);
+
+
+}
