@@ -7,13 +7,6 @@ int fd_count = -1;
 int msg_size = -1;
 int curr_iter_limit = -1;
 
-
-int counter=3;
-bool  isFirstIteration = false;
-
-char *output_fn = NULL;
-char *new_output_fn = NULL;
-
 #define setup 		(struct timespec *fp) \
 			{struct timespec timeA ; \
 			struct timespec timeC; \
@@ -36,9 +29,6 @@ char *new_output_fn = NULL;
 
 #define final_formula ",=\"AVERAGE(B%d:INDIRECT(SUBSTITUTE(ADDRESS(1,COLUMN()-1,4),\"1\",\"%d\")))\",=\"STDEV.P(B%d:INDIRECT(SUBSTITUTE(ADDRESS(1,COLUMN()-2,4),\"1\",\"%d\")))\"\n",counter,counter,counter,counter
 
-#define OUTPUT_FILE_PATH	""
-#define OUTPUT_FN		OUTPUT_FILE_PATH "output_file.csv"
-#define BASE_ITER 10000
 
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b)
 {
@@ -275,7 +265,8 @@ void one_line_test(void (*f)(struct timespec*), testInfo *info){
 	struct timespec testStart, testEnd;
 	clock_gettime(CLOCK_MONOTONIC,&testStart);
 
-	printf("OS Benchmark %s experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);  	
+	printf("%s benchmark experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);
+
 	int runs = info->iter;
 
 	struct timespec* timeArray = (struct timespec *)malloc(sizeof(struct timespec) * runs);
@@ -291,7 +282,7 @@ void one_line_test(void (*f)(struct timespec*), testInfo *info){
 
 	clock_gettime(CLOCK_MONOTONIC,&testEnd);
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
-	printf("Test total runtime:, , %ld.%09ld\n",diffTime->tv_sec, diffTime->tv_nsec); 
+	printf("      %s test total runtime:, , %ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 
 	return;
@@ -301,7 +292,7 @@ void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info){
 	struct timespec testStart, testEnd;
 	clock_gettime(CLOCK_MONOTONIC,&testStart);
 
-	printf("OS Benchmark %s experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);
+	printf("%s benchmark experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);
 
 	int runs = info->iter;
 
@@ -322,7 +313,7 @@ void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info){
 
 	clock_gettime(CLOCK_MONOTONIC,&testEnd);
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
-	printf("Test total runtime:, , %ld.%09ld\n",diffTime->tv_sec, diffTime->tv_nsec); 
+	printf("      %s test total runtime:, , %ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 
 	return;
@@ -331,7 +322,7 @@ void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info){
 void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info){
 	struct timespec testStart, testEnd;
 	clock_gettime(CLOCK_MONOTONIC,&testStart);
-	printf("OS Benchmark %s experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);	
+	printf("%s benchmark experiment\nTest Name:, Iteration (x/%d):, Result (seconds)\n", info->name, info->iter);
 
 	int runs = info->iter;
 
@@ -355,7 +346,7 @@ void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info)
 
 	clock_gettime(CLOCK_MONOTONIC,&testEnd);
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
-	printf("Test total runtime:, , %ld.%09ld\n",diffTime->tv_sec, diffTime->tv_nsec); 
+	printf("      %s test total runtime:, , %ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 	return;
 }

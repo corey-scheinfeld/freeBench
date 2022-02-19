@@ -1,0 +1,118 @@
+#!/usr/local/bin/bash
+
+make
+
+BASE_ITER=10000
+
+touch "output.$1.csv"
+
+{
+printf "OS Benchmark experiment:, $1,\n"
+
+
+##### GETPID #####
+
+#sleep 60
+./ref_test $BASE_ITER*100
+
+./cpu_test 100
+
+./getpid_test $BASE_ITER*100
+
+##### CONTEXT SWITCH #####
+
+./context_switch_test $BASE_ITER*10
+
+##### SEND & RECV #####
+
+./send_test base $BASE_ITER*10
+
+./recv_test base $BASE_ITER*10
+
+./send_test big $BASE_ITER
+
+./recv_test big $BASE_ITER
+
+##### FORK & THREAD CREATE #####
+
+./forkTest base $BASE_ITER*2
+
+./threadTest $BASE_ITER*5
+
+./forkTest big $BASE_ITER/2
+
+./forkTest huge $BASE_ITER/2
+
+##### WRRITE & READ & MMAP & MUNMAP & PAGEFAULT #####
+
+## SMALL ##
+
+./write_test small $BASE_ITER*10
+
+./read_test small $BASE_ITER*10
+
+./mmap_test small $BASE_ITER*10
+
+./munmap_test small $BASE_ITER*10
+
+./page_fault_test small $BASE_ITER*5
+
+## MID ##
+
+./write_test mid $BASE_ITER*10
+
+./read_test mid $BASE_ITER*10
+
+./mmap_test mid $BASE_ITER*10
+
+./munmap_test mid $BASE_ITER*10
+
+./page_fault_test mid $BASE_ITER*5
+
+## BIG ##
+
+./write_test big $BASE_ITER/2
+
+./read_test big $BASE_ITER
+
+./mmap_test big $BASE_ITER*10
+
+./munmap_test big $BASE_ITER/4
+
+./page_fault_test big $BASE_ITER*5
+
+## HUGE ##
+
+./write_test huge $BASE_ITER/4
+
+./read_test huge $BASE_ITER
+
+./mmap_test huge $BASE_ITER*10
+
+./munmap_test huge $BASE_ITER/4
+
+./page_fault_test small $BASE_ITER*5
+
+##### SELECT & POLL & KQUEUE #####
+
+## SMALL ##
+
+./select_test small $BASE_ITER*10
+
+./poll_test small $BASE_ITER*10
+
+./kqueue_test small $BASE_ITER*10
+
+## BIG ##
+
+./select_test big $BASE_ITER
+
+./poll_test big $BASE_ITER
+
+./kqueue_test big $BASE_ITER
+
+remove "test_file.txt"
+
+} > "output.$1.csv"
+
+make clean
