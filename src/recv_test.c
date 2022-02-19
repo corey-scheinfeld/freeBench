@@ -121,5 +121,35 @@ void recv_test(struct timespec *timeArray, int iter, int *i) {
 
 }
 
-int main(int arc, char *argv[]){
+int main(int argc, char *argv[]){
+	testInfo info;
+
+        if (argc != 3){printf("Invalid arguments, gave %d not 3.\n",argc);return(0);}
+
+        char *test_size = argv[1];
+        int iteration = atoi(argv[2]);
+
+        info.iter = iteration;
+
+
+        if(strcmp(test_size, "base") == 0){
+                msg_size = 1;
+                curr_iter_limit = 50;
+
+                info.name = "base recv";
+
+                one_line_test_v2(recv_test, &info);
+        }
+
+        else if(strcmp(test_size, "big") == 0){
+                msg_size = 96000;
+                curr_iter_limit = 1;
+
+                info.name = "big recv";
+
+                one_line_test_v2(recv_test, &info);
+        }
+
+
+        else{printf("Invalid arguments, recv test type not valid.\n");return(0);}
 }
