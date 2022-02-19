@@ -4,115 +4,87 @@ make
 
 BASE_ITER=10000
 
-touch "output.$1.csv"
+mkdir ../data/$1/$2
 
-{
-printf "OS Benchmark experiment:, $1,\n"
-
-
-##### GETPID #####
+##### REF #####
 
 #sleep 60
-./ref_test $BASE_ITER*100
+./ref_test $(($BASE_ITER*100))  > ../data/$1/$2/ref_data.csv
 
-./cpu_test 100
+##### CPU #####
 
-./getpid_test $BASE_ITER*100
+./cpu_test 100  > ../data/$1/$2/cpu_test_data
+
+##### GETPID #####
+./getpid_test $(($BASE_ITER*100)) > ../data/$1/$2/getpid_data.csv
 
 ##### CONTEXT SWITCH #####
 
-./context_switch_test $BASE_ITER*10
+./context_switch_test $(($BASE_ITER*10)) > ../data/$1/$2/context_switch_data.csv
 
 ##### SEND & RECV #####
 
-./send_test base $BASE_ITER*10
-
-./recv_test base $BASE_ITER*10
-
-./send_test big $BASE_ITER
-
-./recv_test big $BASE_ITER
+./send_test base $(($BASE_ITER*10)) > ../data/$1/$2/send_base_data.csv
+./recv_test base $(($BASE_ITER*10)) > ../data/$1/$2/recv_base_data.csv
+./send_test big  $(($BASE_ITER))    > ../data/$1/$2/send_big_data.csv
+./recv_test big  $(($BASE_ITER))    > ../data/$1/$2/recv_big_data.csv
 
 ##### FORK & THREAD CREATE #####
 
-./forkTest base $BASE_ITER*2
+./forkTest base $(($BASE_ITER*2)) > ../data/$1/$2/fork_base_data.csv
+./threadTest    $(($BASE_ITER*5)) > ../data/$1/$2/thread_data.csv
+./forkTest big  $(($BASE_ITER/2)) > ../data/$1/$2/fork_big_data.csv
+./forkTest huge $(($BASE_ITER/2)) > ../data/$1/$2/fork_huge_data.csv
 
-./threadTest $BASE_ITER*5
-
-./forkTest big $BASE_ITER/2
-
-./forkTest huge $BASE_ITER/2
-
-##### WRRITE & READ & MMAP & MUNMAP & PAGEFAULT #####
+##### WRITE & READ & MMAP & MUNMAP & PAGEFAULT #####
 
 ## SMALL ##
 
-./write_test small $BASE_ITER*10
-
-./read_test small $BASE_ITER*10
-
-./mmap_test small $BASE_ITER*10
-
-./munmap_test small $BASE_ITER*10
-
-./page_fault_test small $BASE_ITER*5
+./write_test      small $(($BASE_ITER*10)) > ../data/$1/$2/write_small_data.csv
+./read_test       small $(($BASE_ITER*10)) > ../data/$1/$2/read_small_data.csv
+./mmap_test       small $(($BASE_ITER*10)) > ../data/$1/$2/mmap_small_data.csv
+./munmap_test     small $(($BASE_ITER*10)) > ../data/$1/$2/munmap_small_data.csv
+./page_fault_test small $(($BASE_ITER*5))  > ../data/$1/$2/page_fault_small_data.csv
 
 ## MID ##
 
-./write_test mid $BASE_ITER*10
-
-./read_test mid $BASE_ITER*10
-
-./mmap_test mid $BASE_ITER*10
-
-./munmap_test mid $BASE_ITER*10
-
-./page_fault_test mid $BASE_ITER*5
+./write_test      mid $(($BASE_ITER*10)) > ../data/$1/$2/write_mid_data.csv  
+./read_test       mid $(($BASE_ITER*10)) > ../data/$1/$2/read_mid_data.csv
+./mmap_test       mid $(($BASE_ITER*10)) > ../data/$1/$2/mmap_mid_data.csv
+./munmap_test     mid $(($BASE_ITER*10)) > ../data/$1/$2/munmap_mid_data.csv
+./page_fault_test mid $(($BASE_ITER*5))  > ../data/$1/$2/pagee_fault_mid_data.csv
 
 ## BIG ##
 
-./write_test big $BASE_ITER/2
-
-./read_test big $BASE_ITER
-
-./mmap_test big $BASE_ITER*10
-
-./munmap_test big $BASE_ITER/4
-
-./page_fault_test big $BASE_ITER*5
+./write_test      big $(($BASE_ITER/2))  > ../data/$1/$2/write_big_data.csv
+./read_test       big $(($BASE_ITER))    > ../data/$1/$2/read_big_data.csv
+./mmap_test       big $(($BASE_ITER*10)) > ../data/$1/$2/mmap_big_data.csv
+./munmap_test     big $(($BASE_ITER/4))  > ../data/$1/$2/munmap_big_data.csv
+./page_fault_test big $(($BASE_ITER*5))  > ../data/$1/$2/page_fault_big_data.csv
 
 ## HUGE ##
 
-./write_test huge $BASE_ITER/4
-
-./read_test huge $BASE_ITER
-
-./mmap_test huge $BASE_ITER*10
-
-./munmap_test huge $BASE_ITER/4
-
-./page_fault_test small $BASE_ITER*5
+./write_test      huge  $(($BASE_ITER/4))  > ../data/$1/$2/write_huge_data.csv
+./read_test       huge  $(($BASE_ITER))    > ../data/$1/$2/read_huge_data.csv
+./mmap_test       huge  $(($BASE_ITER*10)) > ../data/$1/$2/mmap_huge_data.csv
+./munmap_test     huge  $(($BASE_ITER/4))  > ../data/$1/$2/munmap_huge_data.csv
+./page_fault_test small $(($BASE_ITER*5))  > ../data/$1/$2/page_fault_huge_data.csv
 
 ##### SELECT & POLL & KQUEUE #####
 
 ## SMALL ##
 
-./select_test small $BASE_ITER*10
-
-./poll_test small $BASE_ITER*10
-
-./kqueue_test small $BASE_ITER*10
+./select_test small $(($BASE_ITER*10)) > ../data/$1/$2/select_base_data.csv
+./poll_test   small $(($BASE_ITER*10)) > ../data/$1/$2/poll_base_data.csv
+./kqueue_test small $(($BASE_ITER*10)) > ../data/$1/$2/kqueue_base_data.csv
 
 ## BIG ##
 
-./select_test big $BASE_ITER
+./select_test big $(($BASE_ITER)) > ../data/$1/$2/select_big_data.csv
+./poll_test   big $(($BASE_ITER)) > ../data/$1/$2/poll_big_data.csv
+./kqueue_test big $(($BASE_ITER)) > ../data/$1/$2/kqueue_big_data.csv
 
-./poll_test big $BASE_ITER
+rm "test_file.txt"
 
-./kqueue_test big $BASE_ITER
-
-remove "test_file.txt"
-
-} > "output.$1.csv"
 
 make clean
