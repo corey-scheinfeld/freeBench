@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
         if (option->fd_count == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
         fd_count = option->fd_count;
-        info.name = strcat(test_type, "poll");
+        info.name = strcat(test_type, " poll");
 
         one_line_test(poll_test, &info);
 

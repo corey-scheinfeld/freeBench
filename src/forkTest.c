@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	if (option->page_count == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
 	page_count = option->page_count;
-	info.name = strcat(test_type, "fork");
+	info.name = strcat(test_type, " fork");
 
 	void *pages[page_count];
 	for (int i = 0; i < page_count; i++) {

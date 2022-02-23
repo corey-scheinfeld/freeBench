@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
         if (option->file_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
         file_size = option->file_size;
-        info.name = strcat(test_type, "munmap");
+        info.name = strcat(test_type, " munmap");
 
         one_line_test(munmap_test, &info);
 

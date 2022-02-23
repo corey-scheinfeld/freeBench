@@ -4,54 +4,48 @@ import statistics as stat
 
 def analyze(raw_data):
     raw_file = open(raw_data, mode='r')
-    out_file = open("stat.csv", mode = 'w')
+    out_file = open("stat.csv", mode = 'a')
 
     fieldnames = ["test", "avg", "min", "max", "kbest", "variance", "stddev"]
 
     raw_csv = list(csv.reader(raw_file, delimiter=','))
     out_csv = csv.DictWriter(out_file, fieldnames = fieldnames, extrasaction='ignore')
 
-    test = "ref"
-    iterations = 0
-    two_line_test = False
+    file = raw_data.split("/")
+    test = file[len(file)-1].split("_")[0]
+
+    two_line_test = ("forkTest" in test or "thread" in test)
 
     data = []
     data2 = []
-    for i in range(1, len(raw_csv)):
+    for i in range(2, len(raw_csv)-1):
         line = raw_csv[i]
+         
+        if(two_line_test):
+            data.append(float(line[2]))
+            data2.append(float(raw_csv[i+1][2]))
+            i+=1
+        else:
+            data.append(float(line[2]))
 
-        if(test != line[0].split(" ")[0]):
-            test = line[0].split(" ")[0]
-            
-            if(test == "forkTest" or test == "theadTest"):
-                two_line_test = True
-                out_csv.writerow({'Test':test+"parent", 'avg':stat.mean(data), 'min':min(data), 'max':max(data), 'kbest': 0, 'variance': stat.variance(data), 'stddev': stat.stdev(data)})
-                out_csv.writerow({'Test':test+"child", 'avg':stat.mean(data2), 'min':min(data2), 'max':max(data2), 'kbest': 0, 'variance': stat.variance(data2), 'stddev': stat.stdev(data2)})
-            else:
-                two_line_test = False
-                out_csv.writerow({'Test':test, 'avg':stat.mean(data), 'min':min(data), 'max':max(data), 'kbest': 0, 'variance': stat.variance(data), 'stddev': stat.stdev(data)})
+    out_csv.writeheader()
+
+    out_csv.writerow({'test': (("parent"+str(test)) if two_line_test else str(test)), 'avg':'{0:.09f}'.format(stat.mean(data)), 'min':'{0:.09f}'.format(min(data)), \
+        'max':'{0:.09f}'.format(max(data)), 'kbest': 0, 'variance':'{0:.09f}'.format(stat.variance(data)), 'stddev': '{0:.09f}'.format(stat.stdev(data))})
+
+    if(two_line_test):
+        out_csv.writerow({'Test':"child"+str(test), 'avg':'{0:.09f}'.format(stat.mean(datai2)), 'min':'{0:.09f}'.format(min(data2)), \
+        'max':'{0:.09f}'.format(max(data2)), 'kbest': 0, 'variance': '{0:.09f}'.format(stat.variance(data2)), 'stddev': '{0:.09f}'.format(stat.stdev(data2))})
                 
-            iterations = 0
-            data = []
-            data2 = []
-            i+=1
-        elif(two_line_test):
-            data[iterations] = float(line[2])
-            data2[iterations] = float(raw_csv[i+1][2])
-            i+=1
-            iterations+=1
-        elif(len(line[0].splt(" ")) == 2):
-            data[iterations] = float(line[2])
-            iterations +=1
-        
+            
     raw_file.close()
     out_file.close()      
 
             
 if __name__ == '__main__':
 
-    if len(sys.argv) < 2:
-        raise Exception("This script requires an input file")
+    if len(sys.argv) < 3:
+        raise Exception("This script requires an input file and test specification")
 
     else:
         analyze(sys.argv[1])

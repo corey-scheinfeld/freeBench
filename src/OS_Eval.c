@@ -1,6 +1,7 @@
 #include "OS_Eval.h"
 
 char *home = "/home/corey/freeBench/src/";
+char *sock = "test_sockets/socket";
 
 int file_size = -1;
 int fd_count = -1;
@@ -327,6 +328,9 @@ void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info){
 	for (int i = 0; i < runs; ) {
 		(*f)(timeArray, info->iter, &i);
 
+	}
+
+	for (int i = 0; i < runs; i++) {
 		printf("      %s time:, iter %d,  %ld.%09ld,\n", info->name, (i+1),timeArray[i].tv_sec, timeArray[i].tv_nsec);
 	}
 

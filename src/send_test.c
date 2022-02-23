@@ -14,7 +14,6 @@ void send_test(struct timespec *timeArray, int iter, int *i) {
 	server_addr.sun_family = AF_UNIX;
 	strncpy(server_addr.sun_path, home, sizeof(server_addr.sun_path) - 1);
 	strncat(server_addr.sun_path, sock, sizeof(server_addr.sun_path) - 1);
-
 	int forkId = fork();
 
 	if (forkId < 0) {
@@ -117,7 +116,7 @@ int main(int argc, char *argv[]){
 
         msg_size = option->msg_size;
 	curr_iter_limit = option->curr_iter_limit;
-        info.name = strcat(test_type, "send");
+        info.name = strcat(test_type, " send");
 
         one_line_test_v2(send_test, &info);
 

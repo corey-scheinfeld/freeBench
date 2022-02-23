@@ -62,9 +62,9 @@ int main(int argc, char *argv[]){
         if (option->file_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
 	file_size = option->file_size;
-        info.name = strcat(test_type, "read");
+        info.name = strcat(test_type, " read");
 
-	if (!(strcmp(info.name, "huge") == 0)){read_warmup();}
+	if (!(strcmp(info.name, "huge read") == 0)){read_warmup();}
         one_line_test(read_test, &info);
 
         return(0);

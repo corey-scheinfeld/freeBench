@@ -138,7 +138,7 @@ int main(int argc, char *argv[]){
 
         msg_size = option->msg_size;
         curr_iter_limit = option->curr_iter_limit;
-        info.name = strcat(test_type, "recv");
+        info.name = strcat(test_type, " recv");
 
         one_line_test_v2(recv_test, &info);
 

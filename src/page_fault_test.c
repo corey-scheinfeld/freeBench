@@ -35,7 +35,7 @@ int main(int argc, char *argv[]){
         if (option->file_size == -1){fprintf(stderr, "Invalid test specification.\n");return(0);}
 
         file_size = option->file_size;
-        info.name = strcat(test_type, "page_fault");
+        info.name = strcat(test_type, " page_fault");
 
         one_line_test(page_fault_test, &info);
 

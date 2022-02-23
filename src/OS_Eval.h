@@ -35,7 +35,6 @@
 #include <sys/select.h>
 #include <math.h>
 
-#define sock "test_sockets/socket"
 #define DEBUG false
 
 extern int file_size;
@@ -69,6 +68,7 @@ extern fileSpec file_tests[];
 extern msgSpec msg_tests[];
 
 extern char* home;
+extern char* sock;
 
 void add_diff_to_sum(struct timespec *result,struct timespec a, struct timespec b);
 struct timespec* calc_average(struct timespec *sum, int size);
