@@ -15,7 +15,6 @@ Advised by Professor Pete Johnson
 	*document differences between epoll's POLL_IN and kqueue's EVFILT_READ.
 	*document differences between context_switch_test and parameters to sched_setaffinity and cpuset_setaffinity.
 	*test intermediate syscalls for immediate return upon failure. 
-	*modify poll_test and kqueue_test, to stay consistent with LEBench use of AF_INET sockets versus PF_UNIX sockets.
 
 
 -----------TECHNICAL NOTES AND OBSERVATIONS-----------
