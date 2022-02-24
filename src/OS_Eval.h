@@ -2,7 +2,7 @@
 #define __OS_EVAL_H
 
 #define __BSD_VISIBLE 1
-#define FD_SETSIZE 2000
+#define FD_SETSIZE 5000
 #include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +15,7 @@
 #include <strings.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <pthread.h>
