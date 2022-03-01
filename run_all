@@ -1,12 +1,25 @@
 #!/usr/local/bin/bash
 
-readarray -t partitions < ./version_partitions.txt
+readarray -t partitions < ./valid_partitions.txt
 
 version=$(uname -r)
+curr_id=$(gpart show -l | grep bootme | awk '{print $3}')
 
-echo "$version"
-gpart_out=$(gpart show -l | grep bootme)
+for index in ${!partitions[*]}; 
+do
+	if [ ${partitions[$index]} -eq $curr_id ]
+	then
+		break
+	fi
+done
 
-declare -a id=($gpart_out)
+next_id=$(($index+1))
 
-echo ${partitions[*]}
+echo $next_id
+echo "$index"
+
+echo ${partitions[2]}
+
+cd ./src
+sudo ./run_benchmarks "$version" 
+cd ..

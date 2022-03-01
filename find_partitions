@@ -1,4 +1,4 @@
 #!/usr/local/bin/bash
 
-gpart show -l | grep bootme | awk '{print $3}'  
+gpart show -l | grep FreeBSD | awk '{print $3}' > valid_partitions.txt  
 
