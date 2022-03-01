@@ -1,4 +1,4 @@
-CC=gcc
+CC=cc
 LDFLAGS=-pthread -O0 -lm
 CFLAGS=-g
 

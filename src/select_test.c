@@ -35,7 +35,7 @@ void select_test(struct timespec *diffTime) {
 
 		int sockoption = 1;
 		if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
-       			printf("[error] failed to enable sock address reuse. %d\n");
+       			printf("[error] failed to enable sock address reuse. \n");
    		}
 
 		retval = bind(fd, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
