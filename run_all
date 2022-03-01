@@ -1,0 +1,12 @@
+#!/usr/local/bin/bash
+
+declare -a partitions=( '2' )
+
+version=$(uname -r)
+
+echo "$version"
+gpart_out=$(gpart show -l | grep bootme)
+
+declare -a id=($gpart_out)
+
+echo ${partitions['2']}
