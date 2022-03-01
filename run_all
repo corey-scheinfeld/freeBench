@@ -1,6 +1,6 @@
 #!/usr/local/bin/bash
 
-declare -a partitions=( '2' )
+readarray -t partitions < ./version_partitions.txt
 
 version=$(uname -r)
 
@@ -9,4 +9,4 @@ gpart_out=$(gpart show -l | grep bootme)
 
 declare -a id=($gpart_out)
 
-echo ${partitions['2']}
+echo ${partitions[*]}
