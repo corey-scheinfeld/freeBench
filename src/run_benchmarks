@@ -69,15 +69,15 @@ mkdir -p ../data/$1/$run
 ./read_test       huge  $(($BASE_ITER))    > ../data/$1/$run/read_huge_data.csv
 ./mmap_test       huge  $(($BASE_ITER*10)) > ../data/$1/$run/mmap_huge_data.csv
 ./munmap_test     huge  $(($BASE_ITER/4))  > ../data/$1/$run/munmap_huge_data.csv
-./page_fault_test small $(($BASE_ITER*5))  > ../data/$1/$run/page_fault_huge_data.csv
+./page_fault_test huge  $(($BASE_ITER*5))  > ../data/$1/$run/page_fault_huge_data.csv
 
 ##### SELECT & POLL & KQUEUE #####
 
 ## SMALL ##
 
-./select_test small $(($BASE_ITER*10)) > ../data/$1/$run/select_base_data.csv
-./poll_test   small $(($BASE_ITER*10)) > ../data/$1/$run/poll_base_data.csv
-./kqueue_test small $(($BASE_ITER*10)) > ../data/$1/$run/kqueue_base_data.csv
+./select_test base $(($BASE_ITER*10)) > ../data/$1/$run/select_base_data.csv
+./poll_test   base $(($BASE_ITER*10)) > ../data/$1/$run/poll_base_data.csv
+./kqueue_test base $(($BASE_ITER*10)) > ../data/$1/$run/kqueue_base_data.csv
 
 ## BIG ##
 

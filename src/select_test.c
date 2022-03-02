@@ -51,34 +51,43 @@ void select_test(struct timespec *diffTime) {
 		if (retval == -1) printf("[error] failed to connect.\n");
 
 		if (fd > maxFd) maxFd = fd;
-
+		
+		printf("fd: %d\n", fd);
 		FD_SET(fd, &rfds);
 		fds[i] = fd;
 		clients[i] = fd_client;
 		sockNum++;
 	}
 
+	printf("max: %d\n", maxFd + 1);
+	
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	retval = syscall(SYS_select, maxFd + 1, &rfds, NULL, NULL, &tv);
+	retval = syscall(SYS_select, maxfd + 1, &rfds, NULL, NULL, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
 	add_diff_to_sum(diffTime, endTime, startTime);
 
+	for(int i = 0; i < fd_count; i++){
+		if(FD_ISSET(fds[i], &rfds) == 0){
+			printf("fail on: %d\n", fds[i]);
+		}
+	}
+
 	if (retval != fd_count) {
-		printf("[error] select return unexpected: %d\n", retval);
+		printf("[error] select return unexpected: %d, errno: %d\n", retval, errno);
 	}
 
 	for (int i = 0; i < fd_count; i++)
 	{
 		FD_CLR(fds[i], &rfds);
 		//remove(server_adds[i].sun_path);
+		
+		int retval = close(clients[i]);
+		if (retval == -1) printf ("[error] client close failed in select test on socket %d, errno %d.\n", clients[i], errno);
 
-		int retval = close(fds[i]);
-		if (retval == -1) printf ("[error] close failed in select test %d.\n", fds[i]);
+		retval = close(fds[i]);
+		if (retval == -1) printf ("[error] server close failed in select test on socket %d.\n", fds[i]);
 
-		retval = close(clients[i]);
-		if (retval == -1) printf ("[error] close failed in select test %d.\n", clients[i]);
-
-	}
+		}
 
 	free(server_adds);
 	return;
