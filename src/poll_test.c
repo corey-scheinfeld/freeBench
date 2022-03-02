@@ -4,9 +4,10 @@ void poll_test(struct timespec *diffTime) {
 	struct timespec startTime, endTime;
 	int retval;
 
-	int fds[fd_count];
+	int servers[fd_count];
 	int clients[fd_count];
-	int sockNum = 50000;
+	int portNum = 50000;
+
 	struct pollfd pfds[fd_count];
 	memset(pfds, 0, sizeof(pfds));
 
@@ -14,45 +15,30 @@ void poll_test(struct timespec *diffTime) {
         memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_in)*fd_count));
 
 	for (int i = 0; i < fd_count; i++) {
-		char fd_num[4];
-                sprintf(fd_num, "%d", i);
 
             	bzero(&server_adds[i], sizeof(server_adds[i]));
 		server_adds[i].sin_family = AF_INET;
-		server_adds[i].sin_port = htons(sockNum);
+		server_adds[i].sin_port = htons(portNum);
 		
 		if(INADDR_ANY){ server_adds[i].sin_addr.s_addr = htonl(INADDR_ANY); }
 
-		char name[10];
-		name[0] = 'f';
-		name[1] = 'i';
-		name[2] = 'l';
-		name[3] = 'e';
-		int j = i;
-		int index = 4;
-		while (j > 0) {
-			name[index] =  48 + j%10;
-			j = j/10;
-			index ++;
-		}
-		name[index] = '\0';
-		int fd = socket(PF_INET, SOCK_STREAM, 0);
-		if (fd < 0) printf("invalid fd in poll: %d\n", fd);
+		int fd_server = socket(PF_INET, SOCK_STREAM, 0);
+		if (fd_server < 0) printf("invalid fd in poll: %d\n", fd_server);
 
-		pfds[i].fd = fd;
+		pfds[i].fd = fd_server;
 		pfds[i].events = POLLIN;
 
-		fds[i] = fd;
+		servers[i] = fd_server;
 	
 		int sockoption = 1;
-		if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
+		if(setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
        			printf("[error] failed to enable sock address reuse. \n");
    		}
 
-		retval = bind(fd, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
+		retval = bind(fd_server, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
                 if (retval == -1) printf("[error] failed to bind.\n");
 
-                retval = listen(fd, 10);
+                retval = listen(fd_server, 10);
                 if (retval == -1) printf("[error] failed to listen.\n");
 
                 int fd_client = socket(PF_INET, SOCK_STREAM, 0);
@@ -62,8 +48,10 @@ void poll_test(struct timespec *diffTime) {
                 if (retval == -1) printf("[error] failed to connect.\n");
 
 		clients[i] = fd_client;
-		sockNum++;
+		portNum++;
 	}
+
+	usleep(100);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	retval = syscall(SYS_poll, pfds, fd_count, 0);
@@ -71,15 +59,15 @@ void poll_test(struct timespec *diffTime) {
 	add_diff_to_sum(diffTime, endTime, startTime);
 
 	if (retval != fd_count) {
-		printf("[error] poll return unexpected: %d\n", retval);
+		printf("[error] poll return unexpected: %d.\n", retval);
 	}
 
 	for (int i = 0; i < fd_count; i++) {
-		retval = close(fds[i]);
-		if (retval == -1) printf ("[error] close failed in poll test %d.\n", fds[i]);
+		int retval = close(clients[i]);
+		if (retval == -1) printf ("[error] client close failed in poll test %d.\n", clients[i]);
 
-		retval = close(clients[i]);
-		if (retval == -1) printf ("[error] close failed in poll test %d.\n", clients[i]);
+		retval = close(servers[i]);
+		if (retval == -1) printf ("[error] server close failed in poll test %d.\n", servers[i]);
 
 	}
 	free(server_adds);
