@@ -8,10 +8,11 @@ void kqueue_test(struct timespec *diffTime) {
         tv.tv_sec = 0;
         tv.tv_nsec = 0;
 
-	int fds[fd_count];
+	int servers[fd_count];
 	int clients[fd_count];
+
 	struct kevent events[fd_count];
-	int sockNum = 50000;
+	int portNum = 50000;
 
 	struct sockaddr_in *server_adds = (struct sockaddr_in *)malloc(fd_count * sizeof(struct sockaddr_in));
         memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_in)*fd_count));
@@ -19,42 +20,27 @@ void kqueue_test(struct timespec *diffTime) {
 	int kqfd = kqueue();
 
 	for (int i = 0; i < fd_count; i++) {
-		char fd_num[4];
-                sprintf(fd_num, "%d", i);
 
 		server_adds[i].sin_family = AF_INET;
-		server_adds[i].sin_port = htons(sockNum);
+		server_adds[i].sin_port = htons(portNum);
 		
 		if(INADDR_ANY){ server_adds[i].sin_addr.s_addr = htonl(INADDR_ANY); }
 
-             	char name[10];
-		name[0] = 'f';
-		name[1] = 'i';
-		name[2] = 'l';
-		name[3] = 'e';
-		int j = i;
-		int index = 4;
-		while (j > 0) {
-			name[index] =  48 + j%10;
-			j = j/10;
-			index ++;
-		}
-		name[index] = '\0';
-		int fd = socket(PF_INET, SOCK_STREAM, 0);
-		if (fd < 0) printf("[error] invalid fd in kqueue: %d\n", fd);
+		int fd_server = socket(PF_INET, SOCK_STREAM, 0);
+		if (fd_server < 0) printf("[error] invalid fd in kqueue: %d\n", fd_server);
 
-		EV_SET(&events[i], fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-		fds[i] = fd;
+		EV_SET(&events[i], fd_server, EVFILT_READ, EV_ADD, 0, 0, 0);
+		servers[i] = fd_server;
 
 		int sockoption = 1;
-		if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
+		if(setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
        			printf("[error] failed to enable sock address reuse. \n");
    		}
 
-		retval = bind(fd, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
+		retval = bind(fd_server, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
                 if (retval == -1) printf("[error] failed to bind.\n");
 
-                retval = listen(fd, 10);
+                retval = listen(fd_server, 10);
                 if (retval == -1) printf("[error] failed to listen.\n");
 
                 int fd_client = socket(PF_INET, SOCK_STREAM, 0);
@@ -64,8 +50,10 @@ void kqueue_test(struct timespec *diffTime) {
                 if (retval == -1) printf("[error] failed to connect.\n");
 
 		clients[i] = fd_client;
-		sockNum++;
+		portNum++;
 	}
+
+	usleep(100);
 
 	struct kevent *eventlist = (struct kevent *)malloc(fd_count * sizeof(struct kevent));
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
@@ -81,11 +69,13 @@ void kqueue_test(struct timespec *diffTime) {
 	retval = close(kqfd);
 	if (retval == -1) printf ("[error] close kqfd failed in kqueue test %d.\n", kqfd);
 	for (int i = 0; i < fd_count; i++) {
-		retval = close(fds[i]);
-		if (retval == -1) printf ("[error] close failed in kqueue test %d.\n", fds[i]);
 
 		retval = close(clients[i]);
 		if (retval == -1) printf ("[error] close failed in kqueue test %d.\n", clients[i]);
+
+		retval = close(servers[i]);
+		if (retval == -1) printf ("[error] close failed in kqueue test %d.\n", servers[i]);
+
 	}
 	free(server_adds);
 	return;
