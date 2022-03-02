@@ -12,7 +12,6 @@ void page_fault_test(struct timespec *diffTime) {
 	char a = *((char *)addr);
 	clock_gettime(CLOCK_MONOTONIC,&endTime);
 
-	printf("read: %c\n", a);
 	syscall(SYS_munmap, addr, file_size);
         close(fd);
 	add_diff_to_sum(diffTime, endTime, startTime);
