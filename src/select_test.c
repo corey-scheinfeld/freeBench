@@ -11,37 +11,34 @@ void select_test(struct timespec *diffTime) {
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 
-	int fds[fd_count];
+	int servers[fd_count];
 	int clients[fd_count];
 	int maxFd = -1;
-	int sockNum = 50000;
+	int portNum = 50000;
 
 	struct sockaddr_in *server_adds = (struct sockaddr_in *)malloc(fd_count * sizeof(struct sockaddr_in));
 	memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_in)*fd_count));
 
 	for (int i = 0; i < fd_count; i++) {
 
-		char fd_num[4];
-		sprintf(fd_num, "%d", i);
-		
 		bzero(&server_adds[i], sizeof(server_adds[i]));
 		server_adds[i].sin_family = AF_INET;
-		server_adds[i].sin_port = htons(sockNum);
+		server_adds[i].sin_port = htons(portNum);
 		
 		if(INADDR_ANY){ server_adds[i].sin_addr.s_addr = htonl(INADDR_ANY); }
 
-		int fd = socket(PF_INET, SOCK_STREAM, 0);
-		if (fd < 0) printf("invalid fd in select: %d\n", fd);
+		int fd_server = socket(PF_INET, SOCK_STREAM, 0);
+		if (fd_server < 0) printf("invalid fd in select: %d\n", fd_server);
 
 		int sockoption = 1;
-		if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
+		if(setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
        			printf("[error] failed to enable sock address reuse. \n");
    		}
 
-		retval = bind(fd, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
+		retval = bind(fd_server, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
 		if (retval == -1) printf("[error] failed to bind.\n");
 
-		retval = listen(fd, 10);
+		retval = listen(fd_server, 10);
 		if (retval == -1) printf("[error] failed to listen.\n");
 
 		int fd_client = socket(PF_INET, SOCK_STREAM, 0);
@@ -50,42 +47,34 @@ void select_test(struct timespec *diffTime) {
 		retval = connect(fd_client, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
 		if (retval == -1) printf("[error] failed to connect.\n");
 
-		if (fd > maxFd) maxFd = fd;
+		if (fd_server > maxFd) maxFd = fd_server;
 		
-		printf("fd: %d\n", fd);
-		FD_SET(fd, &rfds);
-		fds[i] = fd;
+		FD_SET(fd_server, &rfds);
+		servers[i] = fd_server;
 		clients[i] = fd_client;
-		sockNum++;
+		portNum++;
 	}
 
-	printf("max: %d\n", maxFd + 1);
+	usleep(100);
 	
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	retval = syscall(SYS_select, maxfd + 1, &rfds, NULL, NULL, &tv);
+	retval = syscall(SYS_select, maxFd + 1, &rfds, NULL, NULL, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
 	add_diff_to_sum(diffTime, endTime, startTime);
 
-	for(int i = 0; i < fd_count; i++){
-		if(FD_ISSET(fds[i], &rfds) == 0){
-			printf("fail on: %d\n", fds[i]);
-		}
-	}
-
 	if (retval != fd_count) {
-		printf("[error] select return unexpected: %d, errno: %d\n", retval, errno);
+		printf("[error] select return unexpected: %d.\n", retval);
 	}
 
 	for (int i = 0; i < fd_count; i++)
 	{
-		FD_CLR(fds[i], &rfds);
-		//remove(server_adds[i].sun_path);
+		FD_CLR(servers[i], &rfds);
 		
 		int retval = close(clients[i]);
-		if (retval == -1) printf ("[error] client close failed in select test on socket %d, errno %d.\n", clients[i], errno);
+		if (retval == -1) printf ("[error] client close failed in select test on socket %d.\n", clients[i]);
 
-		retval = close(fds[i]);
-		if (retval == -1) printf ("[error] server close failed in select test on socket %d.\n", fds[i]);
+		retval = close(servers[i]);
+		if (retval == -1) printf ("[error] server close failed in select test on socket %d.\n", servers[i]);
 
 		}
 
