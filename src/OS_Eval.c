@@ -5,6 +5,7 @@ char *sock = "test_sockets/socket";
 
 int file_size = -1;
 int fd_count = -1;
+bool is_local = false;
 int msg_size = -1;
 int curr_iter_limit = -1;
 
@@ -17,9 +18,11 @@ fileSpec file_tests[] = {
 };
 
 fdSpec fd_tests[] = {
-        {10, "base"},
-        {1000, "big"},
-	{-1, ""}
+        {10, false, "base"},
+        {1000, false, "big"},
+	{10, true, "base_local"},
+	{1000, true, "big_local"},
+	{-1, false, ""}
 };
 
 msgSpec msg_tests[] = {
@@ -304,7 +307,7 @@ void one_line_test(void (*f)(struct timespec*), testInfo *info){
 
 	clock_gettime(CLOCK_MONOTONIC,&testEnd);
 	struct timespec *diffTime = calc_diff(&testStart, &testEnd);
-	printf("      %s test total runtime:, , %ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
+	printf("      %s test total runtime:%ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 
 	return;
@@ -374,5 +377,92 @@ void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info)
 	printf("      %s test total runtime:, , %ld.%09ld\n",info->name, diffTime->tv_sec, diffTime->tv_nsec); 
 	free(diffTime);
 	return;
+}
+
+struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd){
+	struct sockaddr_in *server_adds = (struct sockaddr_in *)malloc(fd_count * sizeof(struct sockaddr_in));
+	memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_in)*fd_count));
+
+	int retval;
+	int portNum = 50000;
+
+	for (int i = 0; i < fd_count; i++) {
+
+		bzero(&server_adds[i], sizeof(server_adds[i]));
+		server_adds[i].sin_family = AF_INET;
+		server_adds[i].sin_port = htons(portNum);
+		
+		if(INADDR_ANY){ server_adds[i].sin_addr.s_addr = htonl(INADDR_ANY); }
+
+		int fd_server = socket(PF_INET, SOCK_STREAM, 0);
+		if (fd_server < 0) printf("invalid fd in select: %d\n", fd_server);
+
+		int sockoption = 1;
+		if(setsockopt(fd_server, SOL_SOCKET, SO_REUSEADDR, &sockoption, sizeof(sockoption)) < 0) {
+       			printf("[error] failed to enable sock address reuse. \n");
+   		}
+
+		retval = bind(fd_server, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
+		if (retval == -1) printf("[error] failed to bind.\n");
+
+		retval = listen(fd_server, 10);
+		if (retval == -1) printf("[error] failed to listen.\n");
+
+		int fd_client = socket(PF_INET, SOCK_STREAM, 0);
+		if (fd_client < 0) printf("[error] failed to open client socket.\n");
+
+		retval = connect(fd_client, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
+		if (retval == -1) printf("[error] failed to connect.\n");
+
+		if (fd_server > *maxFd) *maxFd = fd_server;
+		
+		servers[i] = fd_server;
+		clients[i] = fd_client;
+		portNum++;
+	}
+
+	return server_adds;
+}
+
+struct sockaddr_un *get_unix(int *servers, int *clients, int *maxFd){
+
+	struct sockaddr_un *server_adds = (struct sockaddr_un *)malloc(fd_count * sizeof(struct sockaddr_un));
+	memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_un)*fd_count));
+
+	int retval;
+
+	for (int i = 0; i < fd_count; i++) {
+
+		char fd_num[4];
+		sprintf(fd_num, "%d", i);
+
+		server_adds[i].sun_family = AF_UNIX;
+		strncat(server_adds[i].sun_path, home, sizeof(server_adds[i].sun_path) - 1);
+		strncat(server_adds[i].sun_path, sock, sizeof(server_adds[i].sun_path) - 1);
+		strncat(server_adds[i].sun_path, fd_num, sizeof(server_adds[i].sun_path) - 1);
+
+		int fd_server = socket(PF_UNIX, SOCK_STREAM, 0);
+		if (fd_server < 0) printf("invalid fd in local select: %d\n", fd_server);
+
+		retval = bind(fd_server, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_un));
+		if (retval == -1) printf("[error] failed to bind.\n");
+
+		retval = listen(fd_server, 10);
+		if (retval == -1) printf("[error] failed to listen.\n");
+
+		int fd_client = socket(PF_UNIX, SOCK_STREAM, 0);
+		if (fd_client < 0) printf("[error] failed to open client socket.\n");
+
+		retval = connect(fd_client, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_un));
+		if (retval == -1) printf("[error] failed to connect.\n");
+
+		if (fd_server > *maxFd) *maxFd = fd_server;
+
+		servers[i] = fd_server;
+		clients[i] = fd_client;
+
+	}	
+
+	return server_adds;
 }
 

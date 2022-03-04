@@ -40,6 +40,7 @@
 
 extern int file_size;
 extern int fd_count;
+extern bool is_local;
 extern int msg_size;
 extern int curr_iter_limit;
 
@@ -55,6 +56,7 @@ typedef struct fileSpec {
 
 typedef struct fdSpec {
         int fd_count;
+	bool is_local;
         const char *name;
 } fdSpec;
 
@@ -77,6 +79,9 @@ struct timespec* calc_average(struct timespec *sum, int size);
 void one_line_test(void (*f)(struct timespec*), testInfo *info);
 void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info);
 void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info);
+
+struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd);
+struct sockaddr_un *get_unix(int *servers, int *clients, int *maxFd);
 
 void forkTest(struct timespec *childTime, struct timespec *parentTime); 
 void threadTest(struct timespec *childTime, struct timespec *parentTime);
