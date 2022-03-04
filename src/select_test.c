@@ -15,26 +15,26 @@ void select_test(struct timespec *diffTime) {
 	int *servers = (int *)malloc(fd_count * sizeof(int)); 
 	int *clients = (int *)malloc(fd_count * sizeof(int));
 	
-	int *maxFd;
-	*maxFd = -1;
+	int maxFd = -1;
 	int portNum = 50000;
 	
 
 	struct sockaddr_in *inet_adds;
 	struct sockaddr_un *unix_adds;
 	
-	if(is_local){unix_adds = get_unix(servers, clients, maxFd);}
-	else{inet_adds = get_inet(servers, clients, maxFd);}
+	if(is_local){unix_adds = get_unix(servers, clients);}
+	else{inet_adds = get_inet(servers, clients);}
 	
 
 	for (int i = 0; i < fd_count; i++) {
+		if (servers[i] > maxFd) maxFd = servers[i];
 		FD_SET(servers[i], &rfds);
 	}
 
-	usleep(100);
+	if(!is_local){usleep(150);}
 	
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	retval = syscall(SYS_select, *maxFd + 1, &rfds, NULL, NULL, &tv);
+	retval = syscall(SYS_select, maxFd + 1, &rfds, NULL, NULL, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
 	add_diff_to_sum(diffTime, endTime, startTime);
 

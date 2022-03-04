@@ -80,8 +80,8 @@ void one_line_test(void (*f)(struct timespec*), testInfo *info);
 void one_line_test_v2(void (*f)(struct timespec*, int, int *), testInfo *info);
 void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info);
 
-struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd);
-struct sockaddr_un *get_unix(int *servers, int *clients, int *maxFd);
+struct sockaddr_in *get_inet(int *servers, int *clients);
+struct sockaddr_un *get_unix(int *servers, int *clients);
 
 void forkTest(struct timespec *childTime, struct timespec *parentTime); 
 void threadTest(struct timespec *childTime, struct timespec *parentTime);

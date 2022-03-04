@@ -15,11 +15,9 @@ done
 
 next_id=$(($index+1))
 
-echo $next_id
-echo "$index"
-
-echo ${partitions[2]}
+gpart set -a bootme -i $next_id ada0
+gpart unset -a bootme -i $curr_id ada0
 
 cd ./src
-sudo ./run_benchmarks "$version" 
+sudo ./run_benchmarks "TEST-13.0" 
 cd ..

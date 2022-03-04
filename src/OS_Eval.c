@@ -379,7 +379,7 @@ void two_line_test(void (*f)(struct timespec*,struct timespec*), testInfo *info)
 	return;
 }
 
-struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd){
+struct sockaddr_in *get_inet(int *servers, int *clients){
 	struct sockaddr_in *server_adds = (struct sockaddr_in *)malloc(fd_count * sizeof(struct sockaddr_in));
 	memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_in)*fd_count));
 
@@ -414,8 +414,6 @@ struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd){
 		retval = connect(fd_client, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_in));
 		if (retval == -1) printf("[error] failed to connect.\n");
 
-		if (fd_server > *maxFd) *maxFd = fd_server;
-		
 		servers[i] = fd_server;
 		clients[i] = fd_client;
 		portNum++;
@@ -424,7 +422,7 @@ struct sockaddr_in *get_inet(int *servers, int *clients, int *maxFd){
 	return server_adds;
 }
 
-struct sockaddr_un *get_unix(int *servers, int *clients, int *maxFd){
+struct sockaddr_un *get_unix(int *servers, int *clients){
 
 	struct sockaddr_un *server_adds = (struct sockaddr_un *)malloc(fd_count * sizeof(struct sockaddr_un));
 	memset((void *)&server_adds[0], 0, (sizeof(struct sockaddr_un)*fd_count));
@@ -455,8 +453,6 @@ struct sockaddr_un *get_unix(int *servers, int *clients, int *maxFd){
 
 		retval = connect(fd_client, (struct sockaddr *) &server_adds[i], sizeof(struct sockaddr_un));
 		if (retval == -1) printf("[error] failed to connect.\n");
-
-		if (fd_server > *maxFd) *maxFd = fd_server;
 
 		servers[i] = fd_server;
 		clients[i] = fd_client;

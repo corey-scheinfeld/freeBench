@@ -73,6 +73,8 @@ mkdir -p ../data/$1/$run
 
 ##### SELECT & POLL & KQUEUE #####
 
+### INET ###
+
 ## SMALL ##
 
 ./select_test base $(($BASE_ITER*10)) > ../data/$1/$run/select_base_data.csv
@@ -84,6 +86,22 @@ mkdir -p ../data/$1/$run
 ./select_test big $(($BASE_ITER)) > ../data/$1/$run/select_big_data.csv
 ./poll_test   big $(($BASE_ITER)) > ../data/$1/$run/poll_big_data.csv
 ./kqueue_test big $(($BASE_ITER)) > ../data/$1/$run/kqueue_big_data.csv
+
+### LOCAL ###
+
+## SMALL ##
+
+./select_test base_local $(($BASE_ITER*10)) > ../data/$1/$run/select_base_data.csv
+./poll_test   base_local $(($BASE_ITER*10)) > ../data/$1/$run/poll_base_data.csv
+./kqueue_test base_local $(($BASE_ITER*10)) > ../data/$1/$run/kqueue_base_data.csv
+
+## BIG ##
+
+./select_test big_local $(($BASE_ITER)) > ../data/$1/$run/select_big_data.csv
+./poll_test   big_local $(($BASE_ITER)) > ../data/$1/$run/poll_big_data.csv
+./kqueue_test big_local $(($BASE_ITER)) > ../data/$1/$run/kqueue_big_data.csv
+
+
 
 rm test_file.txt
 
