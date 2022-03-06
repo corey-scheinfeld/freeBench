@@ -1,6 +1,7 @@
 import csv
 import sys
 import statistics as stat
+import os
 
 INPERCISION = 0.05
 K = 5
@@ -12,7 +13,7 @@ def kBest(timeArray, size):
     prev = timeArray[0]
     j = 0
     k_closest[0] = prev
-    j+=1
+
     for i in range(1, size-2):
         curr = timeArray[i]
         if(curr >= 1 or prev >= 1):
@@ -33,9 +34,9 @@ def kBest(timeArray, size):
     result = k_closest[0]
     return result
 
-def analyze(raw_data):
+def analyze(raw_data, output):
     raw_file = open(raw_data, mode='r')
-    out_file = open("stat.csv", mode = 'a')
+    out_file = open(output, mode = 'a')
 
     fieldnames = ["test", "avg", "min", "max", "kbest", "variance", "stddev"]
 
@@ -44,6 +45,7 @@ def analyze(raw_data):
 
     file = raw_data.split("/")
     test = file[len(file)-1].split("_")[0]
+    print(test)
 
     two_line_test = ("forkTest" in test or "thread" in test)
 
@@ -65,7 +67,7 @@ def analyze(raw_data):
         'max':'{0:.09f}'.format(max(data)), 'kbest': '{0:.09f}'.format(kBest(data, len(data))), 'variance':'{0:.09f}'.format(stat.variance(data)), 'stddev': '{0:.09f}'.format(stat.stdev(data))})
 
     if(two_line_test):
-        out_csv.writerow({'Test':"child"+str(test), 'avg':'{0:.09f}'.format(stat.mean(datai2)), 'min':'{0:.09f}'.format(min(data2)), \
+        out_csv.writerow({'test':"child"+str(test), 'avg':'{0:.09f}'.format(stat.mean(data2)), 'min':'{0:.09f}'.format(min(data2)), \
         'max':'{0:.09f}'.format(max(data2)), 'kbest': kBest(data, len(data)), 'variance': '{0:.09f}'.format(stat.variance(data2)), 'stddev': '{0:.09f}'.format(stat.stdev(data2))})
                 
             
@@ -76,9 +78,16 @@ def analyze(raw_data):
 if __name__ == '__main__':
 
     if len(sys.argv) < 3:
-        raise Exception("This script requires an input file and test specification.")
-
+        raise Exception("This program requires a version name and run number")
     else:
-        analyze(sys.argv[1])
+        raw_directory = "../data/"+sys.argv[1]+"/"+sys.argv[2]
+        stat_directory = "../results/stats/"+sys.argv[1]+"/"+sys.argv[2]
+
+        if not os.path.exists(stat_directory):
+            os.makedirs(stat_directory)
+
+        for data_file in os.listdir(raw_directory):
+            out_file = stat_directory+data_file.replace("data", "stat")
+            analyze(os.path.join(raw_directory, data_file), out_file)
 
     print("done")
