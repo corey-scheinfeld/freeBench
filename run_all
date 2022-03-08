@@ -13,11 +13,13 @@ do
 	fi
 done
 
-next_id=$(($index+1))
+next_id=${partitions[$(($index+1))]}
 
-gpart set -a bootme -i $next_id ada0
-gpart unset -a bootme -i $curr_id ada0
+sudo gpart set -a bootme -i $next_id ada0
+sudo gpart unset -a bootme -i $curr_id ada0
 
 cd ./src
-sudo ./run_benchmarks "TEST-13.0" 
+sudo ./run_benchmarks $version
 cd ..
+
+sudo reboot

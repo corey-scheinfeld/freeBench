@@ -94,7 +94,7 @@ void one_line_test(void (*f)(struct timespec*), testInfo *info){
 		timeArray[i].tv_nsec = 0;
 		(*f)(&timeArray[i]);
 
-		if(&timeArray[i] != NULL){printf("      %s time:, iter %d,  %ld.%09ld,\n", info->name, (i+1),timeArray[i].tv_sec, timeArray[i].tv_nsec);}
+		if(timeArray[i].tv_nsec != 0){printf("      %s time:, iter %d,  %ld.%09ld,\n", info->name, (i+1),timeArray[i].tv_sec, timeArray[i].tv_nsec);}
 	}
 
 	free(timeArray);
