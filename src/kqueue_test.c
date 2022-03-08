@@ -34,11 +34,10 @@ void kqueue_test(struct timespec *diffTime) {
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	retval = kevent(kqfd, events, fd_count, eventlist, fd_count, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
-	add_diff_to_sum(diffTime, endTime, startTime);
 
 	free(eventlist);
-	if (retval != fd_count) {
-		printf("[error] kqueue return unexpected: %d\n", retval);
+	if (retval == fd_count) {
+		add_diff_to_sum(diffTime, endTime, startTime);
 	}
 
 	retval = close(kqfd);

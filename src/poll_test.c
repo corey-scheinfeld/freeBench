@@ -25,15 +25,14 @@ void poll_test(struct timespec *diffTime) {
 		pfds[i].events = POLLIN;
 	}
 
-	if(!is_local){usleep(300);}
+	if(!is_local){usleep(150);}
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	retval = syscall(SYS_poll, pfds, fd_count, 0);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
-	add_diff_to_sum(diffTime, endTime, startTime);
 
-	if (retval != fd_count) {
-		printf("[error] poll return unexpected: %d.\n", retval);
+	if (retval == fd_count) {
+		add_diff_to_sum(diffTime, endTime, startTime);
 	}
 
 	for (int i = 0; i < fd_count; i++) {

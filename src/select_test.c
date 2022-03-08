@@ -36,10 +36,9 @@ void select_test(struct timespec *diffTime) {
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	retval = syscall(SYS_select, maxFd + 1, &rfds, NULL, NULL, &tv);
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
-	add_diff_to_sum(diffTime, endTime, startTime);
 
-	if (retval != fd_count) {
-		printf("[error] select return unexpected: %d.\n", retval);
+	if (retval == fd_count) {
+		add_diff_to_sum(diffTime, endTime, startTime);
 	}
 
 	for (int i = 0; i < fd_count; i++)

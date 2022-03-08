@@ -9,22 +9,28 @@ mkdir -p ../data/$1/$run
 
 ##### REF #####
 
-#sleep 60
+sleep 60
+echo "ref test"
 ./ref_test $(($BASE_ITER*100))  > ../data/$1/$run/ref_data.csv
 
 ##### CPU #####
 
+echo "cpu test"
 ./cpu_test 100  > ../data/$1/$run/cpu_data.csv
 
 ##### GETPID #####
+
+echo "getpid test"
 ./getpid_test $(($BASE_ITER*100)) > ../data/$1/$run/getpid_data.csv
 
 ##### CONTEXT SWITCH #####
 
+echo "context switch test"
 ./context_switch_test $(($BASE_ITER*10)) > ../data/$1/$run/context_switch_data.csv
 
 ##### SEND & RECV #####
 
+echo "send and recieve tests"
 ./send_test base $(($BASE_ITER*10)) > ../data/$1/$run/send_base_data.csv
 ./recv_test base $(($BASE_ITER*10)) > ../data/$1/$run/recv_base_data.csv
 ./send_test big  $(($BASE_ITER))    > ../data/$1/$run/send_big_data.csv
@@ -32,6 +38,7 @@ mkdir -p ../data/$1/$run
 
 ##### FORK & THREAD CREATE #####
 
+echo "fork thread and create"
 ./forkTest base $(($BASE_ITER*2)) > ../data/$1/$run/fork_base_data.csv
 ./threadTest    $(($BASE_ITER*5)) > ../data/$1/$run/thread_data.csv
 ./forkTest big  $(($BASE_ITER/2)) > ../data/$1/$run/fork_big_data.csv
@@ -39,6 +46,8 @@ mkdir -p ../data/$1/$run
 
 ##### WRITE & READ & MMAP & MUNMAP & PAGEFAULT #####
 
+echo "write, read, mmap, munmap, pagefault"
+echo "small"
 ## SMALL ##
 
 ./write_test      small $(($BASE_ITER*10)) > ../data/$1/$run/write_small_data.csv
@@ -47,6 +56,7 @@ mkdir -p ../data/$1/$run
 ./munmap_test     small $(($BASE_ITER*10)) > ../data/$1/$run/munmap_small_data.csv
 ./page_fault_test small $(($BASE_ITER*5))  > ../data/$1/$run/page_fault_small_data.csv
 
+echo "mid"
 ## MID ##
 
 ./write_test      mid $(($BASE_ITER*10)) > ../data/$1/$run/write_mid_data.csv  
@@ -55,6 +65,7 @@ mkdir -p ../data/$1/$run
 ./munmap_test     mid $(($BASE_ITER*10)) > ../data/$1/$run/munmap_mid_data.csv
 ./page_fault_test mid $(($BASE_ITER*5))  > ../data/$1/$run/page_fault_mid_data.csv
 
+echo "big"
 ## BIG ##
 
 ./write_test      big $(($BASE_ITER/2))  > ../data/$1/$run/write_big_data.csv
@@ -63,6 +74,7 @@ mkdir -p ../data/$1/$run
 ./munmap_test     big $(($BASE_ITER/4))  > ../data/$1/$run/munmap_big_data.csv
 ./page_fault_test big $(($BASE_ITER*5))  > ../data/$1/$run/page_fault_big_data.csv
 
+echo "huge"
 ## HUGE ##
 
 ./write_test      huge  $(($BASE_ITER/4))  > ../data/$1/$run/write_huge_data.csv
@@ -73,28 +85,36 @@ mkdir -p ../data/$1/$run
 
 ##### SELECT & POLL & KQUEUE #####
 
+echo "select, poll, kqueue"
+echo "inet"
 ### INET ###
 
-## SMALL ##
+echo "base"
+## BASE ##
 
 ./select_test base $(($BASE_ITER*10)) > ../data/$1/$run/select_base_data.csv
 ./poll_test   base $(($BASE_ITER*10)) > ../data/$1/$run/poll_base_data.csv
 ./kqueue_test base $(($BASE_ITER*10)) > ../data/$1/$run/kqueue_base_data.csv
 
+echo "big"
 ## BIG ##
 
 ./select_test big $(($BASE_ITER)) > ../data/$1/$run/select_big_data.csv
 ./poll_test   big $(($BASE_ITER)) > ../data/$1/$run/poll_big_data.csv
 ./kqueue_test big $(($BASE_ITER)) > ../data/$1/$run/kqueue_big_data.csv
 
+
+echo "local"
 ### LOCAL ###
 
-## SMALL ##
+echo "base"
+## BASE ##
 
 ./select_test base_local $(($BASE_ITER*10)) > ../data/$1/$run/select_local_base_data.csv
 ./poll_test   base_local $(($BASE_ITER*10)) > ../data/$1/$run/poll_local_base_data.csv
 ./kqueue_test base_local $(($BASE_ITER*10)) > ../data/$1/$run/kqueue_local_base_data.csv
 
+echo "big"
 ## BIG ##
 
 ./select_test big_local $(($BASE_ITER)) > ../data/$1/$run/select_local_big_data.csv
