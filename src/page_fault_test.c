@@ -6,7 +6,7 @@ void page_fault_test(struct timespec *diffTime) {
 	int fd =open("test_file.txt", O_RDONLY);
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
-	void *addr = (void *)(uintptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	char a = *((char *)addr);

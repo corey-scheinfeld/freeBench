@@ -7,7 +7,7 @@ void mmap_test(struct timespec *diffTime) {
 	if (fd < 0) printf("invalid fd%d\n", fd);
 
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
-	void *addr = (void *)(uintptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	void *addr = (void *)(intptr_t)__syscall(SYS_mmap, NULL, file_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	clock_gettime(CLOCK_MONOTONIC,&endTime);
 	
 	syscall(SYS_munmap, addr, file_size);
