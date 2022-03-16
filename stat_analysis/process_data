@@ -1,0 +1,11 @@
+#!/usr/local/bin/bash
+
+RAW_DATA="../data/*"
+for version in $RAW_DATA;
+do
+	if [[ "$version" == *"RELEASE"* ]]; then
+		echo ${version##*/}
+		python analyze.py ${version##*/} "run$1"
+	fi
+done
+

@@ -1,0 +1,9 @@
+#!/usr/local/bin/bash
+
+STATS="../results/stats/*"
+
+for version in $STATS;
+do
+	echo ${version##*/}
+        python resultComp.py 12.0-RELEASE/run0 ${version##*/}/run0
+done

@@ -1,0 +1,11 @@
+#!/usr/local/bin/bash
+
+DATA="../results/comp/12.0-RELEASE/run0/**"
+count=0
+for version in $DATA;
+do
+	sed 1d $version/run0/all_tests.csv | while read line; do
+	echo $(echo $line | awk -F',' '{printf " %.f, ",  int($NF)}') 
+	done 
+done  
+

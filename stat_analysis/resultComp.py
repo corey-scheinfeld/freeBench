@@ -34,6 +34,7 @@ if __name__ == '__main__':
         raise Exception("This script requires two input directories")
 
     else:
+        print("running")
         base_dir = "../results/stats/"+sys.argv[1]
         comp_dir = "../results/stats/"+sys.argv[2]
         out_dir = "../results/comp/"+sys.argv[1]+"/"+sys.argv[2]

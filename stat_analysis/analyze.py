@@ -3,8 +3,8 @@ import sys
 import statistics as stat
 import os
 
-INPERCISION = 0.05
-K = 100
+INPERCISION = 0.001
+K = 100 
 
 def kBest(timeArray, size):
     timeArray.sort()
