@@ -1,0 +1,8 @@
+#!/usr/local/bin/bash
+
+cd ./src
+for i in $(seq $1)
+do
+	sudo ./run_benchmarks "TEST-13.0"
+done
+cd ..
