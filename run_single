@@ -1,8 +1,16 @@
 #!/usr/local/bin/bash
 
-cd ./src
-for i in $(seq $1)
-do
-	sudo ./run_benchmarks "TEST-13.0"
-done
-cd ..
+iter=$(cat iter.txt)
+new=$(($iter+1))
+
+> iter.txt
+echo $new > iter.txt
+
+if [ $new -le 3 ]
+then
+        echo "running benchmark iteration $new"
+        cd ./src
+        sudo ./run_benchmarks $1
+        cd ..
+        sudo reboot
+fi
